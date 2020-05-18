@@ -105,58 +105,81 @@ int sum_values(int x[L]) {
 
 int check_search_result(int x[L]) {
     // If only one result, then returns the value of that result
-    // Otherwise, returns 0 meaning no single result
-    if (sum_values(x) == 1) {
+    // If no possible results, then returns -1 (error)
+    // Otherwise, returns 0 meaning there are still multiple results
+    int num_values = sum_values(x);
+    
+    if (num_values == 0) {
+        printf("number of possible values is 0. No solution possible!!\n");
+        return -1;
+    }
+    else if (num_values == 1) {
         for (int i = 0; i < L; i++)
         {
             if (x[i] != 0) {
-                // printf("found one and only one result: %d", i);
                 return i+1;  // acount for 0-based indexes...
             }
         }
     }
-    // else {
-    //     printf("found this many results: %d\n", l);
-    // }
+     
     return 0;
 }
 
 int search(int row, int col) {
     // Searches the same row, column and box as the cell at location "row", "col"
     // If there is only one possible result, returns that value
-    int i;
+    int r, c;
     int* value;
-    int possible_values[L] = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    int possible_values[L];
     int result = 0;
 
+    for (r = 0; r < L; r++) {
+        possible_values[r] = 1;
+    }
+
     // first, look through the same row
-    // printf("\nSearching row %d\n", row + 1);
-    for (i = 0; i < L; i++) {
-        value = &board[row][i];
+    r = row;
+    for (c = 0; c < L; c++) {
+        value = &board[r][c];
         // printf("Row %d, Col %d, Value %d, Address %d\n", row, i, *value, value);
         if (*value != 0) {
+            // printf("Row Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
             possible_values[*value-1] = 0; // acount for 0-based indexes...
         }
     }
     // Check result here??
 
     // 2nd, look through the same column
-    // printf("\nSearching column %d\n", col + 1);
-    for (i = 0; i < L; i++) {
-        value = &board[i][col];
+    c = col;
+    for (r = 0; r < L; r++) {
+        value = &board[r][c];
         if (*value != 0) {
+            // printf("Col Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
             possible_values[*value-1] = 0; // acount for 0-based indexes...
         }
     }
 
-    // Finally, check the 3x3 box it is in
+    // 3rd, check the 3x3 box it is in
+    int row_min = (row/3)*3;
+    int row_max = (row/3 + 1)*3;
+    int col_min = (col/3)*3;
+    int col_max = (col/3 + 1)*3;
 
-
-    // Check if number of possible values is 1 (only one solution left)
-    result = check_search_result(possible_values);
-    if (result != 0) {
-        return result;
+    for (r = row_min; r < row_max; r++) {
+        for (c = col_min; c < col_max; c++) {
+            value = &board[r][c];
+            if (*value != 0) {
+                // printf("Box Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
+                possible_values[*value - 1] = 0; // acount for 0-based indexes...
+            }
+        }
     }
+
+    // Finally, Check if number of possible values is 1 (only one solution left)
+    result = check_search_result(possible_values);
+    // if (result != 0) {
+    //     return result;
+    // }
 
     return result;
 }
@@ -167,13 +190,15 @@ int main()
     int cells_left_start = cells_left;
     int row = 0;
     int col = 0;
+    int result = 0;
+    int round = 0;
     
     // Setup board
     std::cout << "Starting!\n";
     get_initial_values();
     display_board();
 
-    // Init counter
+    // Init counters
     for (row = 0; row < L; row++) {
         for (col = 0; col < L; col++) {
             if (board[row][col] != 0) {  cells_left--; }
@@ -184,15 +209,20 @@ int main()
 
     // Main loop
     while (cells_left > 0) {
+        round++;
         cells_left_start = cells_left;
-        // printf("\nTrying with %d cells left\n", cells_left);
+
         for (row = 0; row < L; row++) {
             for (col = 0; col < L; col++) {
                 if (board[row][col] == 0) {
                     // printf("\nSearching for results to: row %d, col %d\n", row+1, col+1);
-                    // cells_left--;
-                    board[row][col] = search(row, col);
-                    if (board[row][col] != 0) {
+                    result = search(row, col);
+                    if (result < 0) {
+                        printf("\n\n No possible results for cell at row %d, column %d.\n   Cannot solve this puzzel!!!\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    else if (result != 0) {
+                        board[row][col] = result;
                         printf("\nFound result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
                         cells_left--;
                     }
@@ -201,7 +231,10 @@ int main()
         }
 
         display_board();
-        printf("Cells completed:   %d\n", 81 - cells_left);
+        printf("Previous number of cells completed: %d\n", 81 - cells_left_start);
+        printf("Round %d: number of cells completed: %d\n", round, 81 - cells_left);
+
+        // cells_left = 0;
 
         if (cells_left_start == cells_left) {
             printf("No new cells could be solved in the last iteration. Giving up...");
@@ -212,12 +245,14 @@ int main()
         }
     }
 
+    // TODO: Add some sort of checker to make sure that each row, col, and box only has 1-9 once
+
     // Solution
     if (cells_left == 0) {
-        std::cout << "\n\nFinished!\n";
+        printf("\n\nFinished in %d rounds!\n", round);
     }
     else {
-        std::cout << "\n\nFAILED!\n";
+        printf("\n\nFAILED!\n");
         exit(EXIT_FAILURE);
     }
     
