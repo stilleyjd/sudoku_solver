@@ -129,58 +129,46 @@ int check_search_result(int x[L]) {
     return 0;
 }
 
+void eval_cell(int r, int c, int found_values[L]) {
+    int* value = &board[r][c];
+    // printf("Row %d, Col %d, Value %d, Address %d\n", row, i, *value, value);
+    if (*value != 0) {
+        // printf("Row Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
+        // printf("Col Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
+        // printf("Box Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
+        found_values[*value - 1] = 1; // acount for 0-based indexes...
+    }
+}
+
 int search(int row, int col) {
     // Searches the same row, column and box as the cell at location "row", "col"
     // If there is only one possible result, returns that value
+
     int r, c;
-    int* value;
     int found_values[L] = { 0 };
     int result = 0;
 
     // 1st, look through the same row
-    r = row;
     for (c = 0; c < L; c++) {
-        value = &board[r][c];
-        // printf("Row %d, Col %d, Value %d, Address %d\n", row, i, *value, value);
-        if (*value != 0) {
-            // printf("Row Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
-            found_values[*value-1] = 1; // acount for 0-based indexes...
-        }
+        eval_cell(row, c, found_values);
     }
 
     // 2nd, look through the same column
-    c = col;
     for (r = 0; r < L; r++) {
-        value = &board[r][c];
-        if (*value != 0) {
-            // printf("Col Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
-            found_values[*value-1] = 1; // acount for 0-based indexes...
-        }
+        eval_cell(r, col, found_values);
     }
 
     // TODO: Check result here??
 
     // 3rd, check the 3x3 box it is in
-    int row_min = (row/3)*3;
-    int row_max = (row/3 + 1)*3;
-    int col_min = (col/3)*3;
-    int col_max = (col/3 + 1)*3;
-
-    for (r = row_min; r < row_max; r++) {
-        for (c = col_min; c < col_max; c++) {
-            value = &board[r][c];
-            if (*value != 0) {
-                // printf("Box Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
-                found_values[*value - 1] = 1; // acount for 0-based indexes...
-            }
+    for (r = (row/3)*3; r < (row/3 + 1)*3; r++) {
+        for (c = (col/3)*3; c < (col/3 + 1)*3; c++) {
+            eval_cell(r, c, found_values);
         }
     }
 
     // Finally, Check if number of found values is 1 less than max (only one solution left)
     result = check_search_result(found_values);
-    // if (result != 0) {
-    //     return result;
-    // }
 
     return result;
 }
@@ -216,31 +204,34 @@ void check_for_double_values(int double_coords[]) {
     int result = 0;
 
     // 1st, check all rows
-    for (r = 0; r < L; r++) {
-        printf("Checking row %d\n", r + 1);
+    printf("Checking row: ");
 
+    for (r = 0; r < L; r++) {
+        printf("%d, ", r + 1);
         check_area(r, r + 1, 0, L, double_coords);
         if (double_coords[0] + double_coords[1] > -1) { return; }
     }
 
     // 2nd, check all columns
-    for (c = 0; c < L; c++) {
-        printf("Checking column %d\n", c + 1);
+    printf("\nChecking column: ");
 
+    for (c = 0; c < L; c++) {
+        printf("%d, ", c + 1);
         check_area(0, L, c, c+1, double_coords);
         if (double_coords[0] + double_coords[1] > -1) { return; }
     }
 
     // 3rd, check all 3x3 boxes
+    printf("\nChecking boxes: ");
+
     for (r = 0; r < L-2; r = r +3) {
         for (c = 0; c < L-2; c = c + 3) {
-            printf("Checking box starting at row %d, col %d\n", r + 1, c + 1);
-
+            printf("%d-%dx%d-%d, ", r + 1, r + 3, c + 1, c + 3);
             check_area(r, r + 3, c, c + 3, double_coords);
             if (double_coords[0] + double_coords[1] > -1) { return; }
         }
     }
-
+    printf("\n");
 }
 
 int main()
