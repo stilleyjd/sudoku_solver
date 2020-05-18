@@ -51,7 +51,9 @@ void get_initial_values() {
     board[8][4] = 8;
     board[8][7] = 7;
     board[8][8] = 9;
-    //board[][] = ;
+
+    //board[6][4] = 5;
+    
     //board[][] = ;
     //board[][] = ;
     //board[][] = ;
@@ -106,17 +108,19 @@ int sum_values(int x[L]) {
 int check_search_result(int x[L]) {
     // If only one result, then returns the value of that result
     // If no possible results, then returns -1 (error)
-    // Otherwise, returns 0 meaning there are still multiple results
+    // Otherwise, returns 0 meaning there are still multiple possible results
+
     int num_values = sum_values(x);
     
-    if (num_values == 0) {
-        printf("number of possible values is 0. No solution possible!!\n");
+    if (num_values >= L) {
+        // printf("number of found values is 9. No solution possible!!\n");
         return -1;
     }
-    else if (num_values == 1) {
+    else if (num_values == L-1) {
         for (int i = 0; i < L; i++)
-        {
-            if (x[i] != 0) {
+        {   
+            // If only 1 unfound value, the solution must be the value that wasn't found
+            if (x[i] == 0) {
                 return i+1;  // acount for 0-based indexes...
             }
         }
@@ -130,24 +134,19 @@ int search(int row, int col) {
     // If there is only one possible result, returns that value
     int r, c;
     int* value;
-    int possible_values[L];
+    int found_values[L] = { 0 };
     int result = 0;
 
-    for (r = 0; r < L; r++) {
-        possible_values[r] = 1;
-    }
-
-    // first, look through the same row
+    // 1st, look through the same row
     r = row;
     for (c = 0; c < L; c++) {
         value = &board[r][c];
         // printf("Row %d, Col %d, Value %d, Address %d\n", row, i, *value, value);
         if (*value != 0) {
             // printf("Row Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
-            possible_values[*value-1] = 0; // acount for 0-based indexes...
+            found_values[*value-1] = 1; // acount for 0-based indexes...
         }
     }
-    // Check result here??
 
     // 2nd, look through the same column
     c = col;
@@ -155,9 +154,11 @@ int search(int row, int col) {
         value = &board[r][c];
         if (*value != 0) {
             // printf("Col Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
-            possible_values[*value-1] = 0; // acount for 0-based indexes...
+            found_values[*value-1] = 1; // acount for 0-based indexes...
         }
     }
+
+    // TODO: Check result here??
 
     // 3rd, check the 3x3 box it is in
     int row_min = (row/3)*3;
@@ -170,13 +171,13 @@ int search(int row, int col) {
             value = &board[r][c];
             if (*value != 0) {
                 // printf("Box Search: Found value at row %d, column %d: %d\n", r + 1, c + 1, *value);
-                possible_values[*value - 1] = 0; // acount for 0-based indexes...
+                found_values[*value - 1] = 1; // acount for 0-based indexes...
             }
         }
     }
 
-    // Finally, Check if number of possible values is 1 (only one solution left)
-    result = check_search_result(possible_values);
+    // Finally, Check if number of found values is 1 less than max (only one solution left)
+    result = check_search_result(found_values);
     // if (result != 0) {
     //     return result;
     // }
@@ -184,8 +185,67 @@ int search(int row, int col) {
     return result;
 }
 
+void check_area(int r0, int r1, int c0, int c1, int double_coords[]) {
+    int r, c;
+    int found_values[L] = { 0 };
+    int* value;
+
+    for (r = r0; r < r1; r++) {
+        for (c = c0; c < c1; c++) {
+            value = &board[r][c];
+            // printf("Checking value at row %d, col %d: %d\n", r + 1, c + 1, board[r][c]);
+
+            if (*value > 0) {
+                found_values[*value - 1]++;
+            }
+
+            if (found_values[*value - 1] > 1) {
+                printf("\nDouble value of %d found at %d, %d!!!\n", *value, r + 1, c + 1);
+                double_coords[0] = r + 1;
+                double_coords[1] = c + 1;
+                return;
+            }
+        }
+    }
+}
+
+void check_for_double_values(int double_coords[]) {
+    // Checks the board to make sure there is only one instance of each number in each row, col, and box
+    // If there is an instance of multiple vaues, sets values to row and col where occurance found
+    int r, c;
+    int result = 0;
+
+    // 1st, check all rows
+    for (r = 0; r < L; r++) {
+        printf("Checking row %d\n", r + 1);
+
+        check_area(r, r + 1, 0, L, double_coords);
+        if (double_coords[0] + double_coords[1] > -1) { return; }
+    }
+
+    // 2nd, check all columns
+    for (c = 0; c < L; c++) {
+        printf("Checking column %d\n", c + 1);
+
+        check_area(0, L, c, c+1, double_coords);
+        if (double_coords[0] + double_coords[1] > -1) { return; }
+    }
+
+    // 3rd, check all 3x3 boxes
+    for (r = 0; r < L-2; r = r +3) {
+        for (c = 0; c < L-2; c = c + 3) {
+            printf("Checking box starting at row %d, col %d\n", r + 1, c + 1);
+
+            check_area(r, r + 3, c, c + 3, double_coords);
+            if (double_coords[0] + double_coords[1] > -1) { return; }
+        }
+    }
+
+}
+
 int main()
 {
+    // int success = 0;
     int cells_left = L * L;
     int cells_left_start = cells_left;
     int row = 0;
@@ -218,7 +278,8 @@ int main()
                     // printf("\nSearching for results to: row %d, col %d\n", row+1, col+1);
                     result = search(row, col);
                     if (result < 0) {
-                        printf("\n\n No possible results for cell at row %d, column %d.\n   Cannot solve this puzzel!!!\n");
+                        printf("\n\n No possible valid result for cell at row %d, column %d.\n   Cannot solve this puzzel!!!\n", 
+                            row + 1, col + 1);
                         exit(EXIT_FAILURE);
                     }
                     else if (result != 0) {
@@ -245,17 +306,27 @@ int main()
         }
     }
 
-    // TODO: Add some sort of checker to make sure that each row, col, and box only has 1-9 once
 
-    // Solution
+    // Finish up
     if (cells_left == 0) {
-        printf("\n\nFinished in %d rounds!\n", round);
+        printf("\nFinished in %d rounds\n\n", round);
+
+        // Check to make sure that each row, col, and box only has 1 - 9 once
+        int double_values[2] = { -1, -1 };
+        check_for_double_values(double_values);
+
+        if (double_values[0] == -1) {
+            printf("\nThe solution is valid. Success!!\n");
+            exit(EXIT_SUCCESS);
+        }
+        else {
+            printf("\nThe solution had an invalid result at %d, %d!!!\n", double_values[0], double_values[1]);
+            exit(EXIT_FAILURE);
+        }
     }
     else {
         printf("\n\nFAILED!\n");
         exit(EXIT_FAILURE);
     }
-    
-    // display_board();
 }
 
