@@ -11,57 +11,116 @@
 //   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
 //   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
 
+#define _CRT_SECURE_NO_DEPRECATE
 #include <iostream>
+#include <stdio.h>
+
 
 const int L = 9;
-int board[L][L];
+int board[L][L] = { 0 };
 
 
 void get_initial_values() {
     // TODO: Read these in from a file (or image??)
-    
+    char item = ' ';
+    char file_name[50];
+    int row = 0;
+    int col = 0;
+
+    FILE* fp;
+
+    do {
+        printf("Enter the filename of the Sudoku puzzel to solve.\n");
+        scanf("%s", file_name);
+
+        fp = fopen(file_name, "r");
+
+        if (fp == NULL) {
+            printf("Error while opening the file %s\n Try again\n", file_name);
+        }
+    } while (fp == NULL);
+ 
+    item = fgetc(fp);
+    while (item != EOF) {
+        printf("%c\n", item);
+
+        // Check if commentted line
+        if (item == '/') {
+            while (item != '\n') {
+                item = fgetc(fp);
+            }
+        }
+
+        // Check if space 
+        else if (item == ' ') {
+            continue;
+        }
+
+        // Check if EOL "\n"
+        else if (item == '\n') {
+            if (col == L) {
+                // If end of line found after 9 columns, reset columns and incremnt the row
+                col = 0;
+                row++;
+            }
+            else {
+                printf("Return character found when not expected...");
+            }
+        } 
+
+        // Check if empty value "-" or "0"
+        else if (item == '0' || item == '-') {
+            board[row][col] = 0;
+            col++;
+            if (col >= L) {
+                perror("Column greater than expected found!");
+            }
+        }
+
+        // Otherwise, convert to int
+        else {
+            board[row][col] = item - '0';
+        }
+
+        // Finally, get next item
+        item = fgetc(fp);
+    }
+
+
     //    r  c    From: https://en.wikipedia.org/wiki/Sudoku 
-    board[0][0] = 5;
-    board[0][1] = 3;
-    board[0][4] = 7;
-    board[1][0] = 6;
-    board[1][3] = 1;
-    board[1][4] = 9;
-    board[1][5] = 5;
-    board[2][1] = 9;
-    board[2][2] = 8;
-    board[2][7] = 6;
-    board[3][0] = 8;
-    board[3][4] = 6;
-    board[3][8] = 3;
-    board[4][0] = 4;
-    board[4][3] = 8;
-    board[4][5] = 3;
-    board[4][8] = 1;
-    board[5][0] = 7;
-    board[5][4] = 2;
-    board[5][8] = 6;
-    board[6][1] = 6;
-    board[6][6] = 2;
-    board[6][7] = 8;
-    board[7][3] = 4;
-    board[7][4] = 1;
-    board[7][5] = 9;
-    board[7][8] = 5;
-    board[8][4] = 8;
-    board[8][7] = 7;
-    board[8][8] = 9;
+    // board[0][0] = 5;
+    // board[0][1] = 3;
+    // board[0][4] = 7;
+    // board[1][0] = 6;
+    // board[1][3] = 1;
+    // board[1][4] = 9;
+    // board[1][5] = 5;
+    // board[2][1] = 9;
+    // board[2][2] = 8;
+    // board[2][7] = 6;
+    // board[3][0] = 8;
+    // board[3][4] = 6;
+    // board[3][8] = 3;
+    // board[4][0] = 4;
+    // board[4][3] = 8;
+    // board[4][5] = 3;
+    // board[4][8] = 1;
+    // board[5][0] = 7;
+    // board[5][4] = 2;
+    // board[5][8] = 6;
+    // board[6][1] = 6;
+    // board[6][6] = 2;
+    // board[6][7] = 8;
+    // board[7][3] = 4;
+    // board[7][4] = 1;
+    // board[7][5] = 9;
+    // board[7][8] = 5;
+    // board[8][4] = 8;
+    // board[8][7] = 7;
+    // board[8][8] = 9;
 
     //board[6][4] = 5;
     
-    //board[][] = ;
-    //board[][] = ;
-    //board[][] = ;
-    //board[][] = ;
-    //board[][] = ;
-    //board[][] = ;
-    //board[][] = ;
-    //board[][] = ;
 }
 
 
