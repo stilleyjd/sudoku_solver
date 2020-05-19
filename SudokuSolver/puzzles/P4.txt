@@ -1,0 +1,11 @@
+- 9 - - - 6 1 - -
+7 1 - - 9 - - 2 8
+- - 8 - - - - 4 9
+- 6 - 2 5 - - - 1
+- - - - - - - - -
+5 - - - 6 9 - 7 -
+1 2 - - - - 8 - -
+9 8 - - 4 - - 5 2
+- - 5 6 - - - 1 -
+
+// From: https://www.colourbox.com/vector/sudoku-game-with-answer-vector-puzzle-game-with-numbers-for-kids-and-adults-vector-26133585 

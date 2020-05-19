@@ -1,144 +1,30 @@
-// SudokuSolver.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+// SudokuSolver.cpp : This tool takes in a sudoku board and generates a solution.
 
 #define _CRT_SECURE_NO_DEPRECATE
 #include <iostream>
 #include <stdio.h>
 
 
-const int L = 9;
+const int N = 3;
+const int L = N*N;
 int board[L][L] = { 0 };
 
 
-void get_initial_values() {
-    // TODO: Read these in from a file (or image??)
-    char item = ' ';
-    char file_name[50];
-    int row = 0;
-    int col = 0;
-
-    FILE* fp;
-
-    do {
-        printf("Enter the filename of the Sudoku puzzel to solve.\n");
-        scanf("%s", file_name);
-
-        fp = fopen(file_name, "r");
-
-        if (fp == NULL) {
-            printf("Error while opening the file %s\n Try again\n", file_name);
-        }
-    } while (fp == NULL);
- 
-    item = fgetc(fp);
-    while (item != EOF) {
-        printf("%c\n", item);
-
-        // Check if commentted line
-        if (item == '/') {
-            while (item != '\n') {
-                item = fgetc(fp);
-            }
-        }
-
-        // Check if space 
-        else if (item == ' ') {
-            continue;
-        }
-
-        // Check if EOL "\n"
-        else if (item == '\n') {
-            if (col == L) {
-                // If end of line found after 9 columns, reset columns and incremnt the row
-                col = 0;
-                row++;
-            }
-            else {
-                printf("Return character found when not expected...");
-            }
-        } 
-
-        // Check if empty value "-" or "0"
-        else if (item == '0' || item == '-') {
-            board[row][col] = 0;
-            col++;
-            if (col >= L) {
-                perror("Column greater than expected found!");
-            }
-        }
-
-        // Otherwise, convert to int
-        else {
-            board[row][col] = item - '0';
-        }
-
-        // Finally, get next item
-        item = fgetc(fp);
-    }
-
-
-    //    r  c    From: https://en.wikipedia.org/wiki/Sudoku 
-    // board[0][0] = 5;
-    // board[0][1] = 3;
-    // board[0][4] = 7;
-    // board[1][0] = 6;
-    // board[1][3] = 1;
-    // board[1][4] = 9;
-    // board[1][5] = 5;
-    // board[2][1] = 9;
-    // board[2][2] = 8;
-    // board[2][7] = 6;
-    // board[3][0] = 8;
-    // board[3][4] = 6;
-    // board[3][8] = 3;
-    // board[4][0] = 4;
-    // board[4][3] = 8;
-    // board[4][5] = 3;
-    // board[4][8] = 1;
-    // board[5][0] = 7;
-    // board[5][4] = 2;
-    // board[5][8] = 6;
-    // board[6][1] = 6;
-    // board[6][6] = 2;
-    // board[6][7] = 8;
-    // board[7][3] = 4;
-    // board[7][4] = 1;
-    // board[7][5] = 9;
-    // board[7][8] = 5;
-    // board[8][4] = 8;
-    // board[8][7] = 7;
-    // board[8][8] = 9;
-
-    //board[6][4] = 5;
-    
-}
-
-
 void display_board() {
-    std::cout << "Board State: \n\n";
+    printf("\nBoard State: \n\n");
+    printf(" -----------------------------------\n");  // Top box line
 
-    printf(" -----------------------------------\n");
     for (int row = 0; row < L; row++) {
-        printf("| ");
+        printf("| "); // Print the left box line
         for (int col = 0; col < L; col++) {
             if (board[row][col] == 0) {
-                printf("-");
+                printf("-"); 
             }
             else {
                 printf("%d", board[row][col]);
             }
             // Pad with line (if section end) or spaces 
-            if (col % 3 == 2) {
+            if (col % N == N-1) {
                 printf(" | ");
             }
             else {
@@ -146,14 +32,113 @@ void display_board() {
             }
         }
         printf("\n"); // Start a new row
-        if (row % 3 == 2) {
-            printf(" -----------------------------------\n");
+        if (row % N == N-1) {
+            printf(" -----------------------------------\n");  // Bottom section line
         }
         else {
-            printf("|           |           |           |\n");
+            printf("|           |           |           |\n");  // If empty row, just print seperators
         }
     }
 }
+
+void get_initial_values() {
+    // TODO: Read these in from a file (or image??)
+    char item;
+    char file_name[10];
+    char path_name[150];
+    int row = 0;
+    int col = 0;
+    int val;
+
+    FILE* fp;
+
+    do {
+        printf("Enter the filename of the Sudoku puzzel to solve.\n");
+
+
+        // scanf("%s", file_name);
+        strcpy(file_name, "P1.txt");  // For development
+        // strcpy(file_name, "P2.txt");  // Need more advanced techniques to solve
+        // strcpy(file_name, "P3.txt");  // Need more advanced techniques to solve
+        // strcpy(file_name, "P4.txt");  // Need more advanced techniques to solve
+        
+        // TODO: Get the current directory during runtime instead of preconfiguring it
+        //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
+
+        snprintf(path_name, sizeof(path_name), "%s%s", "C:\\Users\\Jordan Stilley\\source\\repos\\stilleyjd\\sudoku_solver\\SudokuSolver\\puzzles\\", file_name);
+        fp = fopen(path_name, "r");
+
+        if (fp == NULL) {
+            printf("Error while opening the file '%s'\n Try again\n", path_name);
+        }
+    } while (fp == NULL);
+
+    printf("Reading in contnets from: '%s'\n", path_name);
+    printf("---------------------------------------------------------------\n");
+
+    item = fgetc(fp);
+    while (item != EOF) {
+        printf("%c", item);
+
+        // Check if commentted line
+        if (item == '/') {
+            while (item != '\n' && item != EOF) {
+                printf("%c", item);
+                item = fgetc(fp);
+            }
+        }
+        // Check if space 
+        else if (item == ' ') {
+            item = fgetc(fp);
+            continue;
+        }
+        // Check if EOL "\n"
+        else if (item == '\n') {
+            if (col == L) {
+                // If end of line found after 9 columns, reset columns and incremnt the row
+                col = 0;
+                row++;
+            }
+            else if (col != 0 && col != L) {
+                printf("\nReturn character found when not expected.... At col %s\n", col);
+                exit(EXIT_FAILURE);
+            }
+        }
+        // Finally, handle actual board values
+        else {
+            if (item == '0' || item == '-') {
+                // Check if empty value "-" or "0"
+                val = 0;
+            }
+            else {
+                // Otherwise, convert to int
+                val = item - '0';
+            }
+            // Check for errors
+            if (row >= L || col >= L) {
+                printf("\nBoard has too many rows or columns! rows: %d, columns: %d!\n", row + 1, col + 1);
+                exit(EXIT_FAILURE);
+            }
+            if (val < 0 || val > 9) {
+                printf("\nInvalid value found: %s!\n", val);
+                exit(EXIT_FAILURE);
+            }
+
+            board[row][col] = val;
+            col++;
+        }
+
+        item = fgetc(fp);
+    }
+
+    fclose(fp);
+    printf("\n---------------------------------------------------------------\n\n");
+
+    display_board();
+    printf("\n Is this board correct? Press any key to continue.");
+    scanf("%c", &item);
+}
+
 
 int sum_values(int x[L]) {
     int sum = 0;
@@ -232,13 +217,14 @@ int search(int row, int col) {
     return result;
 }
 
-void check_area(int r0, int r1, int c0, int c1, int double_coords[]) {
+
+void check_area(int row_start, int row_end, int col_start, int col_end, int double_coords[]) {
     int r, c;
     int found_values[L] = { 0 };
     int* value;
 
-    for (r = r0; r < r1; r++) {
-        for (c = c0; c < c1; c++) {
+    for (r = row_start; r < row_end; r++) {
+        for (c = col_start; c < col_end; c++) {
             value = &board[r][c];
             // printf("Checking value at row %d, col %d: %d\n", r + 1, c + 1, board[r][c]);
 
@@ -262,9 +248,10 @@ void check_for_double_values(int double_coords[]) {
     int r, c;
     int result = 0;
 
+    printf("Checking the board for invalid values...\n");
+
     // 1st, check all rows
     printf("Checking row: ");
-
     for (r = 0; r < L; r++) {
         printf("%d, ", r + 1);
         check_area(r, r + 1, 0, L, double_coords);
@@ -273,25 +260,24 @@ void check_for_double_values(int double_coords[]) {
 
     // 2nd, check all columns
     printf("\nChecking column: ");
-
     for (c = 0; c < L; c++) {
         printf("%d, ", c + 1);
-        check_area(0, L, c, c+1, double_coords);
+        check_area(0, L, c, c + 1, double_coords);
         if (double_coords[0] + double_coords[1] > -1) { return; }
     }
 
-    // 3rd, check all 3x3 boxes
+    // 3rd, check all NxN boxes
     printf("\nChecking boxes: ");
-
-    for (r = 0; r < L-2; r = r +3) {
-        for (c = 0; c < L-2; c = c + 3) {
-            printf("%d-%dx%d-%d, ", r + 1, r + 3, c + 1, c + 3);
-            check_area(r, r + 3, c, c + 3, double_coords);
+    for (r = 0; r < L - 2; r = r + N) {
+        for (c = 0; c < L - 2; c = c + N) {
+            printf("%d-%dx%d-%d, ", r + 1, r + N, c + 1, c + N);
+            check_area(r, r + N, c, c + N, double_coords);
             if (double_coords[0] + double_coords[1] > -1) { return; }
         }
     }
     printf("\n");
 }
+
 
 int main()
 {
@@ -304,16 +290,24 @@ int main()
     int round = 0;
     
     // Setup board
-    std::cout << "Starting!\n";
     get_initial_values();
-    display_board();
 
+    // Check to make sure that each row, col, and box only has 1 - 9 once
+    int double_values[2] = { -1, -1 };
+    check_for_double_values(double_values);
+    if (double_values[0] > -1) {
+        printf("\nThe board has a double value at %d, %d! Cannot continue!!\n", double_values[0], double_values[1]);
+        exit(EXIT_FAILURE);
+    }
+    
     // Init counters
     for (row = 0; row < L; row++) {
         for (col = 0; col < L; col++) {
             if (board[row][col] != 0) {  cells_left--; }
         }
     }
+
+    std::cout << "\n\nStarting!\n";
     printf("Cells completed:   %d\n", 81-cells_left);
     printf("Cells to complete: %d\n\n", cells_left);
 
