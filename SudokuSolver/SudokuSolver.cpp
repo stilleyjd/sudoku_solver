@@ -205,8 +205,8 @@ int search(int row, int col) {
     // TODO: Check result here??
 
     // 3rd, check the 3x3 box it is in
-    for (r = (row/3)*3; r < (row/3 + 1)*3; r++) {
-        for (c = (col/3)*3; c < (col/3 + 1)*3; c++) {
+    for (r = (row/N)*N; r < (row/N + 1)*N; r++) {
+        for (c = (col/N)*N; c < (col/N + 1)*N; c++) {
             eval_cell(r, c, found_values);
         }
     }
