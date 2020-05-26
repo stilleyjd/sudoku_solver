@@ -4,22 +4,23 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #include <iostream>
 #include <stdio.h>
-// #include "read_and_display.h"
+#include <windows.h>
+// #include "board_globals.h"
+#include "read_and_display.h"
 
-/* Global variables
-const int N
-const int L = N * N;
-int board[L][L]
-*/
+#define FILENAME "P1.txt" // For inital development of simple solver
+// #define FILENAME "P2.txt" // Need more advanced techniques to solve
+// #define FILENAME "P3.txt" // Need more advanced techniques to solve
+// #define FILENAME "P4.txt" // Need more advanced techniques to solve
 
 
-void display_board() {
+void display_board(int board[LEN][LEN]) {
     printf("\nBoard State: \n\n");
     printf(" -----------------------------------\n");  // Top box line
 
-    for (int row = 0; row < L; row++) {
+    for (int row = 0; row < LEN; row++) {
         printf("| "); // Print the left box line
-        for (int col = 0; col < L; col++) {
+        for (int col = 0; col < LEN; col++) {
             if (board[row][col] == 0) {
                 printf("-");
             }
@@ -27,7 +28,7 @@ void display_board() {
                 printf("%d", board[row][col]);
             }
             // Pad with line (if section end) or spaces 
-            if (col % N == N - 1) {
+            if (col % NUM == NUM - 1) {
                 printf(" | ");
             }
             else {
@@ -35,7 +36,7 @@ void display_board() {
             }
         }
         printf("\n"); // Start a new row
-        if (row % N == N - 1) {
+        if (row % NUM == NUM - 1) {
             printf(" -----------------------------------\n");  // Bottom section line
         }
         else {
@@ -44,36 +45,46 @@ void display_board() {
     }
 }
 
-void get_initial_values() {
+void get_initial_values(int board[LEN][LEN]) {
     // TODO: Read these in from a file (or image??)
     char item;
     char file_name[10];
-    char path_name[150];
+    char path_name[FILENAME_MAX];
+    char buff[FILENAME_MAX];
+    int attempts = 0;
     int row = 0;
     int col = 0;
     int val;
 
     FILE* fp;
 
+
+    // Get the current directory during runtime
+    //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
+    //    http://www.cplusplus.com/forum/windows/187372/ 
+    GetCurrentDirectoryA(FILENAME_MAX, buff);
+    printf("Current working dir: %s\n", buff);
+
     do {
         printf("Enter the filename of the Sudoku puzzel to solve.\n");
 
+        #ifndef FILENAME
+        scanf("%s", file_name);
+        #else
+        strcpy(file_name, FILENAME);  // For development
+        #endif // !FILENAME
 
-        // scanf("%s", file_name);
-        strcpy(file_name, "P1.txt");  // For development
-        // strcpy(file_name, "P2.txt");  // Need more advanced techniques to solve
-        // strcpy(file_name, "P3.txt");  // Need more advanced techniques to solve
-        // strcpy(file_name, "P4.txt");  // Need more advanced techniques to solve
-
-        // TODO: Get the current directory during runtime instead of preconfiguring it
-        //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
-
-        snprintf(path_name, sizeof(path_name), "%s%s", "C:\\Users\\Jordan Stilley\\source\\repos\\stilleyjd\\sudoku_solver\\SudokuSolver\\puzzles\\", file_name);
+        snprintf(path_name, sizeof(path_name), "%s\\puzzles\\%s", buff, file_name);
         fp = fopen(path_name, "r");
 
-        if (fp == NULL) {
+        attempts++;
+        if (attempts > 10) {
+            printf("Error while opening the file '%s'\n Too many attempts. Giving up!!\n", path_name);
+            exit(EXIT_FAILURE);
+        } else if (fp == NULL) {
             printf("Error while opening the file '%s'\n Try again\n", path_name);
         }
+
     } while (fp == NULL);
 
     printf("Reading in contnets from: '%s'\n", path_name);
@@ -97,13 +108,13 @@ void get_initial_values() {
         }
         // Check if EOL "\n"
         else if (item == '\n') {
-            if (col == L) {
+            if (col == LEN) {
                 // If end of line found after 9 columns, reset columns and incremnt the row
                 col = 0;
                 row++;
             }
-            else if (col != 0 && col != L) {
-                printf("\nReturn character found when not expected.... At col %s\n", col);
+            else if (col != 0 && col != LEN) {
+                printf("\nReturn character found when not expected.... At col %d\n", col);
                 exit(EXIT_FAILURE);
             }
         }
@@ -118,12 +129,12 @@ void get_initial_values() {
                 val = item - '0';
             }
             // Check for errors
-            if (row >= L || col >= L) {
+            if (row >= LEN || col >= LEN) {
                 printf("\nBoard has too many rows or columns! rows: %d, columns: %d!\n", row + 1, col + 1);
                 exit(EXIT_FAILURE);
             }
             if (val < 0 || val > 9) {
-                printf("\nInvalid value found: %s!\n", val);
+                printf("\nInvalid value found: %d!\n", val);
                 exit(EXIT_FAILURE);
             }
 
@@ -137,7 +148,7 @@ void get_initial_values() {
     fclose(fp);
     printf("\n---------------------------------------------------------------\n\n");
 
-    display_board();
+    display_board(board);
     printf("\n Is this board correct? Press any key to continue.");
     scanf("%c", &item);
 }

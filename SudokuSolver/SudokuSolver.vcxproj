@@ -142,10 +142,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="read_and_display.cpp" />
+    <ClCompile Include="algorithms.cpp" />
     <ClCompile Include="SudokuSolver.cpp" />
+    <ClCompile Include="validate.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Puzzel_1.txt" />
+    <ClInclude Include="algorithms.h" />
+    <ClInclude Include="board_globals.h" />
+    <ClInclude Include="read_and_display.h" />
+    <ClInclude Include="validate.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

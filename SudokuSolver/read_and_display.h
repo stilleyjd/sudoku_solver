@@ -1,13 +1,8 @@
 /* This file has functions used to read in initial boards from a file and display the board state
 */
 
-/* Global variables
-const int N
-const int L = N * N;
-int board[L][L]
-*/
+#include "board_globals.h"
 
+void display_board(int board[LEN][LEN]);
 
-void display_board();
-
-void get_initial_values();
+void get_initial_values(int board[LEN][LEN]);
