@@ -5,13 +5,13 @@
 #include <iostream>
 #include <stdio.h>
 #include <windows.h>
-// #include "board_globals.h"
 #include "read_and_display.h"
+// #include "board_globals.h"
 
-#define FILENAME "P1.txt" // For inital development of simple solver
+// #define FILENAME "P1.txt" // For inital development of simple solver
 // #define FILENAME "P2.txt" // Need more advanced techniques to solve
-// #define FILENAME "P3.txt" // Need more advanced techniques to solve
-// #define FILENAME "P4.txt" // Need more advanced techniques to solve
+// #define FILENAME "P3.txt" // Need more advanced techniques to solve - sometimes solved with randomizer
+#define FILENAME "P4.txt" // Need more advanced techniques to solve - sometimes solved with randomizer
 
 
 void display_board(int board[LEN][LEN]) {
@@ -45,7 +45,13 @@ void display_board(int board[LEN][LEN]) {
     }
 }
 
-void get_initial_values(int board[LEN][LEN]) {
+int get_initial_values(int board[LEN][LEN]) {
+    /* This program populates the intial board values from a .txt file
+    The .txt file should have all values in 9 rows and 9 colunms
+    Empty spaces should be specified by either "-" or "0" (spaces are ignored)
+    It returns the number of empty spaces remaining
+    */
+
     // TODO: Read these in from a file (or image??)
     char item;
     char file_name[10];
@@ -55,6 +61,7 @@ void get_initial_values(int board[LEN][LEN]) {
     int row = 0;
     int col = 0;
     int val;
+    int num_empty_cells = 0;
 
     FILE* fp;
 
@@ -68,21 +75,26 @@ void get_initial_values(int board[LEN][LEN]) {
     do {
         printf("Enter the filename of the Sudoku puzzel to solve.\n");
 
-        #ifndef FILENAME
+        #ifndef FILENAME // If filename is not specified above, ask the user
         scanf("%s", file_name);
         #else
         strcpy(file_name, FILENAME);  // For development
         #endif // !FILENAME
 
-        snprintf(path_name, sizeof(path_name), "%s\\puzzles\\%s", buff, file_name);
+        snprintf(path_name, sizeof(path_name), "%s\\puzzles\\%s", buff, file_name);  // build file path
         fp = fopen(path_name, "r");
 
         attempts++;
-        if (attempts > 10) {
-            printf("Error while opening the file '%s'\n Too many attempts. Giving up!!\n", path_name);
-            exit(EXIT_FAILURE);
-        } else if (fp == NULL) {
-            printf("Error while opening the file '%s'\n Try again\n", path_name);
+        if (fp == NULL) {
+            printf("Error while opening the file '%s'\n ", path_name);
+
+            if (attempts > 10) {
+                printf("Too many attempts. Giving up!!\n");
+                exit(EXIT_FAILURE);
+            } 
+            else {
+                printf("Try again\n");
+            }
         }
 
     } while (fp == NULL);
@@ -151,4 +163,13 @@ void get_initial_values(int board[LEN][LEN]) {
     display_board(board);
     printf("\n Is this board correct? Press any key to continue.");
     scanf("%c", &item);
+
+    // Init counter
+    for (int row = 0; row < LEN; row++) {
+        for (int col = 0; col < LEN; col++) {
+            if (board[row][col] == 0) { num_empty_cells++; }
+        }
+    }
+    return num_empty_cells;
+
 }
