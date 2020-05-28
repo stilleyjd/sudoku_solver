@@ -5,4 +5,4 @@
 
 void display_board(int board[LEN][LEN]);
 
-int get_initial_values(int board[LEN][LEN]);
+int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]);

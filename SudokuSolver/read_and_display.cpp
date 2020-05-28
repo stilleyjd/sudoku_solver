@@ -5,8 +5,10 @@
 #include <iostream>
 #include <stdio.h>
 #include <windows.h>
+#include <math.h>
+#include "board_globals.h"
 #include "read_and_display.h"
-// #include "board_globals.h"
+
 
 // #define FILENAME "P1.txt" // For inital development of simple solver
 // #define FILENAME "P2.txt" // Need more advanced techniques to solve
@@ -45,14 +47,13 @@ void display_board(int board[LEN][LEN]) {
     }
 }
 
-int get_initial_values(int board[LEN][LEN]) {
+int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     /* This program populates the intial board values from a .txt file
     The .txt file should have all values in 9 rows and 9 colunms
     Empty spaces should be specified by either "-" or "0" (spaces are ignored)
     It returns the number of empty spaces remaining
     */
 
-    // TODO: Read these in from a file (or image??)
     char item;
     char file_name[10];
     char path_name[FILENAME_MAX];
@@ -99,6 +100,7 @@ int get_initial_values(int board[LEN][LEN]) {
 
     } while (fp == NULL);
 
+    // Read these in the values from the file 
     printf("Reading in contnets from: '%s'\n", path_name);
     printf("---------------------------------------------------------------\n");
 
@@ -167,7 +169,14 @@ int get_initial_values(int board[LEN][LEN]) {
     // Init counter
     for (int row = 0; row < LEN; row++) {
         for (int col = 0; col < LEN; col++) {
-            if (board[row][col] == 0) { num_empty_cells++; }
+            if (board[row][col] == 0) { 
+                num_empty_cells++; 
+                // candidates[row][col] = round(pow(2, LEN)) - 1
+                // memset(candidates[row][col], 1, sizeof(candidates[row][col])); -- didn't work...
+                for (int i = 0; i < LEN; i++) {
+                    candidates[row][col][i] = 1;
+                }
+            }
         }
     }
     return num_empty_cells;
