@@ -26,6 +26,11 @@ int main()
     int num_empty_cells_prev = num_empty_cells;
     int num_cells_found = 0;
 
+    int num_times_naked_single = 0;
+    int num_times_hidden_single = 0;
+    int num_times_random = 0;
+
+
     // Copy of intial values in case of failure 
     // TODO: Get rid of these if possible!
     int initial_board[LEN][LEN] = { 0 }; // Copy of Initial board state
@@ -61,29 +66,51 @@ int main()
         round++;
         num_empty_cells_prev = num_empty_cells;
 
-        // Do a round of naked single search first (where only one value is missing after looking at row, col, box)
-        num_cells_found = naked_single_search(board, candidates);
-        if (num_cells_found < 0) { // Something went wrong, so restart
+        do {
+            // Do naked single search first (where only one value is missing after looking at row, col, box)
+            num_cells_found = naked_single_search(board, candidates);
+            num_times_naked_single += num_cells_found;
+            num_empty_cells -= num_cells_found;
+        } while (num_cells_found > 0);
+
+        if (num_empty_cells == 0) {
+            break;
+        } else if (num_cells_found < 0) { // If something went wrong (return value is < 0), restart
             num_fails++;
-            if (num_fails > 50) {
-                printf("Failed too many times. Giving up...");
-                exit(EXIT_FAILURE);
+            if (num_fails > 10) {
+                printf("Failed too many times. Giving up...\n");
+                break;
+            }
+            else {
+                printf("Resetting board back to last good state.\n");
             }
             // Reset the board and counters
-            memcpy(board, initial_board, sizeof(board)); 
+            memcpy(board, initial_board, sizeof(board));
+            memcpy(candidates, initial_candidates, sizeof(candidates));
             num_empty_cells = initial_num_empty_cells;
             used_random_values = 0;
             continue;
         }
-        num_empty_cells = num_empty_cells - num_cells_found;
+
+        // Hidden Singles
+        if (num_cells_found == 0) {
+            printf("\nNo new cells could be solved in the last iteration. Trying Hidden Singles Search");
+            num_cells_found = hidden_single_search(board, candidates);
+            num_times_hidden_single += num_cells_found;
+            num_empty_cells -= num_cells_found;
+        }
 
         // TODO: Then do some more deterministic approaches if that doesn't work in a round
 
-        if (num_empty_cells_prev == num_empty_cells) {
-            printf("\nNo new cells could be solved in the last iteration. Trying more advanced solutions");
+        // Finally, try Random Value search
+        if (num_cells_found == 0) {
+            printf("\nNo new cells could be solved in the last iteration. Trying randomized solution...");
             // Final approah: Try to randomize the cells with fewest opitons to see if that gives a valid solution
-            num_empty_cells = num_empty_cells - randomized_value_board_search(board, candidates);
-            if (num_empty_cells < num_empty_cells_prev) { 
+            num_cells_found = randomized_value_board_search(board, candidates);
+            num_empty_cells -= num_cells_found;
+            num_times_random += num_cells_found;
+
+            if (num_cells_found > 0) {
                 used_random_values = 1; 
             }
             else {
@@ -94,17 +121,23 @@ int main()
         // If random values have not been used, then update the board to fall back to. 
         if (used_random_values == 0) {
             memcpy(initial_board, board, sizeof(initial_board));
+            memcpy(initial_candidates, candidates, sizeof(initial_candidates));
             initial_num_empty_cells = num_empty_cells;
         }
 
         // Then display the results
         display_board(board);
-        printf("Previous number of cells completed: %d\n", 81 - num_empty_cells_prev);
-        printf("Round %d: number of cells completed: %d\n\n", round, 81 - num_empty_cells);
+        printf("Previous number of cells completed: %d\n", LEN*LEN - num_empty_cells_prev);
+        printf("Round %d: number of cells completed: %d\n\n", round, LEN * LEN - num_empty_cells);
 
     }
 
     // Finish up
+    printf("\nNumber of times the various algorithms were used: \n");
+    printf("  Naked Singles:  %d\n", num_times_naked_single);
+    printf("  Hidden Singles: %d\n", num_times_hidden_single);
+    printf("  Random Choice:  %d\n", num_times_random);
+
     if (num_empty_cells == 0) {
         printf("\nFinished in %d rounds\n", round);
         printf("\n  Had %d failures\n\n", num_fails);

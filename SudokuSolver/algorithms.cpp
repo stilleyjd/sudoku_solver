@@ -69,7 +69,8 @@ void display_candidates(int candidate_values[]) {
     printf("\n");
 }
 
-void eval_cell(int board[LEN][LEN], int r, int c, int candidate_values[LEN]) {
+void naked_single_elim(int board[LEN][LEN], int r, int c, int candidate_values[LEN]) {
+    // Elimate candidate values using the naked singles method.
     int* value = &board[r][c];
     // printf("Row %d, Col %d, Value %d, Address %d\n", row, i, *value, value);
     if (*value != 0) {
@@ -86,9 +87,6 @@ int check_search_result(int candidate_values[LEN]) {
 
     int num_values = sum_ints(LEN, candidate_values);
 
-    // printf("Checking %d candidate value(s) of: ", num_values);
-    // display_candidates(candidate_values);
-
     if (num_values == 0) {
         // printf("number of found values is 9. No solution possible!!\n");
         return -1;
@@ -103,59 +101,41 @@ int check_search_result(int candidate_values[LEN]) {
             }
         }
     }
-
     return 0;
 }
 
-void naked_single_cell(int board[LEN][LEN], int row, int col, int candidate_values[LEN]) {
-    // Searches the same row, column and box as the cell at location "row", "col"
-    // Puts the results into the existing_values array (1 means a value is found)
-    int r, c;
-
-    // 1st, look through the same row
-    for (c = 0; c < LEN; c++) {
-        eval_cell(board, row, c, candidate_values);
-    }
-
-    // 2nd, look through the same column
-    for (r = 0; r < LEN; r++) {
-        eval_cell(board, r, col, candidate_values);
-    }
-
-    // 3rd, check the 3x3 box it is in
-    for (r = (row / NUM) * NUM; r < (row / NUM + 1) * NUM; r++) {
-        for (c = (col / NUM) * NUM; c < (col / NUM + 1) * NUM; c++) {
-            eval_cell(board, r, c, candidate_values);
-        }
-    }
-}
-
-
-
 int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     /* Naked Single: a cell for which there exists a unique candidate based on the circumstance
-    that its groups contain all the other digits (Davis, 2007) */
+        that its groups contain all the other digits (Davis, 2007) */
     int row = 0;
     int col = 0;
-    // int candidate_values[LEN] = { 0 };
+    int r, c;
     int result;
     int num_cells_completed = 0;
 
     for (row = 0; row < LEN; row++) {
         for (col = 0; col < LEN; col++) {
             if (board[row][col] == 0) {
-                // // reset the existing values array and then search this cell
-                // memset(existing_values, 0, sizeof(existing_values));
+                // printf("\Nacked Single search for results to: row %d, col %d\n", row+1, col+1);
 
-                // get the last candidate values
-                // expand_candidate(candidates[row][col], candidate_values);
-                // memset(candidate_values, candidates[row][col], sizeof(candidate_values));
+                // 1st, look through the same row
+                for (c = 0; c < LEN; c++) {
+                    naked_single_elim(board, row, c, candidates[row][col]);
+                }
 
-                // printf("\nSearching for results to: row %d, col %d\n", row+1, col+1);
-                naked_single_cell(board, row, col, candidates[row][col]);
+                // 2nd, look through the same column
+                for (r = 0; r < LEN; r++) {
+                    naked_single_elim(board, r, col, candidates[row][col]);
+                }
 
-                // TODO: Move search check to outer loop??
-                // For a basic search, just check if number of found values is 1 less than max (only one solution left)
+                // 3rd, check the 3x3 box it is in
+                for (r = (row / NUM) * NUM; r < (row / NUM + 1) * NUM; r++) {
+                    for (c = (col / NUM) * NUM; c < (col / NUM + 1) * NUM; c++) {
+                        naked_single_elim(board, r, c, candidates[row][col]);
+                    }
+                }
+
+                // After this search, check if number of found values is 1 less than max (only one solution left)
                 result = check_search_result(candidates[row][col]);
 
                 if (result < 0) {
@@ -166,22 +146,105 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                 else if (result != 0) {
                     board[row][col] = result;
                     // candidates[row][col] = 0;
-                    printf("\nFound result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
+                    printf("\nFound Naked Single result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
                     num_cells_completed++;
                 }
-                // else {
-                //     candidates[row][col] = collapse_candidate(candidate_values);
-                // }
             }
         }
     }
     return num_cells_completed;
 }
 
+
+int hidden_single_group_search(int row, int col, int ind, int rb, int re, int cb, int ce, int candidates[LEN][LEN][LEN]) {
+    int count = 0;
+    int c, r;
+    int result = 0;
+
+    for (r = rb; r < re; r++) {
+        for (c = cb; c < ce; c++) {
+            // printf("  Candidates for r %d, c %d: ", r + 1, c + 1);
+            // display_candidates(candidates[r][c]);
+            if (candidates[r][c][ind] == 1) {
+                count++;
+            }
+        }
+    }
+    // If only one cell has this value, then it must be the winner :)
+    if (count == 1) {  
+        result = ind + 1; // Account for 0-based index...
+    }
+    return result;
+}
+
+int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+    /* Hidden Single: a cell for which there exists a unique candidate based on the constraint
+        that no other cell in one of its groups can be that number (Davis, 2007) */
+    int row = 0;
+    int col = 0;
+    int i;
+
+    int result;
+    int num_cells_completed = 0;
+
+    for (row = 0; row < LEN; row++) {
+        for (col = 0; col < LEN; col++) {
+            if (board[row][col] == 0) {
+                // Search the cell's groups (the row, column and box of the cell at location "row", "col")
+                //    to see if there is a candidate value that only this cell has
+
+               //  printf("Hidden Single search for results to: row %d, col %d\n", row+1, col+1);
+                result = 0;
+                
+                // Loop through all candidate values, checking if they're unique in their row, col, or box
+                for (i = 0; i < LEN; i++) {
+                    if (candidates[row][col][i] == 1) {
+                        // printf("Checking value of %d\n", i + 1);
+
+                        // 1st, look through the same row
+                        // printf("Hidden Single row search: \n");
+                        result = hidden_single_group_search(row, col, i, row, row + 1, 0, LEN, candidates);
+                        if (result > 0) {
+                            break;
+                        }
+
+                        // 2nd, look through the same column
+                        // printf("Hidden Single column search: \n");
+                        result = hidden_single_group_search(row, col, i, 0, LEN, col, col+1, candidates);
+                        if (result > 0) {
+                            break;
+                        }
+
+                        // 3rd, check the 3x3 box it is in
+                        result = hidden_single_group_search(row, col, i, 
+                            (row / NUM) * NUM, (row / NUM + 1) * NUM, 
+                            (col / NUM) * NUM, (col / NUM + 1) * NUM, candidates);
+                        if (result > 0) {
+                            break;
+                        }
+                    } // candidate value
+                } // i 
+
+                // If successful, recored the result and exit 
+                if (result != 0) {
+                    board[row][col] = result;
+                    num_cells_completed++;
+                    // Remove other candidates from this cell
+                    memset(candidates[row][col], 0, sizeof(candidates[row][col]));
+
+                    printf("\nFound Hidden Singles result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
+                    return num_cells_completed;
+                }
+
+            } // if no value
+        } // col
+    } // row
+    return num_cells_completed;
+}
+
 int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     int row = 0;
     int col = 0;
-    // int candidate_values[LEN] = { 0 };
     int num_missing = 0;
     int result = 0;
     int num_cells_completed = 0;
@@ -195,26 +258,13 @@ int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][
     
     for (row = 0; row < LEN; row++) {
         for (col = 0; col < LEN; col++) {
-            if (board[row][col] == 0) {  // TODO: check board values or candidate values??
-                // // reset the existing values array and then search this cell
-                // memset(candidate_values, 0, sizeof(candidate_values));
-                // // printf("\nSearching for results to: row %d, col %d\n", row+1, col+1);
-                // naked_single_cell(board, row, col, candidate_values);
-                // ***
-                // TODO: Combine this part into the simple search... and then randomize if no new values found
-                // ***
-
-                // get the last candidate values from previous searches
-                // expand_candidate(candidates[row][col], candidate_values);
-                // memset(candidate_values, candidates[row][col], sizeof(candidate_values));
-
-                // Then, if fewer cells are missing than the fewest found, update values 
+            if (board[row][col] == 0) {  // TODO: check board values or candidate values?
+                // If fewer values are missing in this cell than the current candidate, update values 
                 num_missing = sum_ints(LEN, candidates[row][col]);
                 if (num_missing < num_missing_min) {
                     num_missing_min = num_missing;
                     row_min = row;
                     col_min = col;
-                    // memcpy(candidate_values_min, candidate_values, sizeof(candidate_values_min));
                     memcpy(candidate_values_min, candidates[row][col], sizeof(candidate_values_min));
                 }
                 // if only 2 values are missing, quit, since this is the smallest value possible.
@@ -234,7 +284,6 @@ int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][
             }
         }
 
-        
         while (result == 0) {
             rand_val = rand() % LEN; // Then gen a random value and see if it's a valid value
             // TODO: Instead of a random number, use the first possible value
