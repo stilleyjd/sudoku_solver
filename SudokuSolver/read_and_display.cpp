@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <math.h>
+#include <string.h>
 #include "board_globals.h"
 #include "read_and_display.h"
 
@@ -47,6 +48,36 @@ void display_board(int board[LEN][LEN]) {
     }
 }
 
+
+void correct_path_name(char buff[]) {
+    // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
+    int i;
+    int j;
+    char new_word[] = "SudokuSolver";
+    char* loc;
+
+    //    First, find if "Debug" starts // TODO: Do this with pointers instead??
+    loc = strstr(buff, "Debug");
+    if (loc != NULL) {
+        // Find index at beginning of old word
+        i = strlen(buff);
+        while (i > 0 && buff[i] != '\\') {
+            // printf("%c", buff[i]);
+            i--;
+        }
+        i++;
+
+        // Then replace text starting at that index
+        for (j = 0; j < sizeof(new_word); j++) {
+            buff[i] = new_word[j];
+            i++;
+        }
+        // Then place end character
+        buff[i++] = '\0';
+    }
+
+}
+
 int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     /* This program populates the intial board values from a .txt file
     The .txt file should have all values in 9 rows and 9 colunms
@@ -71,12 +102,15 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
     //    http://www.cplusplus.com/forum/windows/187372/ 
     GetCurrentDirectoryA(FILENAME_MAX, buff);
-    printf("Current working dir: %s\n", buff);
+    printf("Current working dir: '%s'\n", buff);
+
+    // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
+    correct_path_name(buff);  // TODO: Figuer this out later...
+    printf("Corrected file dir: '%s'\n", buff);
 
     do {
-        printf("Enter the filename of the Sudoku puzzel to solve.\n");
-
         #ifndef FILENAME // If filename is not specified above, ask the user
+        printf("Enter the filename of the Sudoku puzzel to solve.\n");
         scanf("%s", file_name);
         #else
         strcpy(file_name, FILENAME);  // For development
@@ -101,7 +135,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     } while (fp == NULL);
 
     // Read these in the values from the file 
-    printf("Reading in contnets from: '%s'\n", path_name);
+    printf("\nReading in contnets from: '%s'\n", path_name);
     printf("---------------------------------------------------------------\n");
 
     item = fgetc(fp);
