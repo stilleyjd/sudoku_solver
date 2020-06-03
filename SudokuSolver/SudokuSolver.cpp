@@ -134,6 +134,9 @@ int main()
     }
 
     // Finish up
+    printf("\nFinal Solution: \n");
+    display_board(board);
+
     printf("\nNumber of times the various algorithms were used: \n");
     printf("  Naked Singles:  %d\n", num_times_naked_single);
     printf("  Hidden Singles: %d\n", num_times_hidden_single);

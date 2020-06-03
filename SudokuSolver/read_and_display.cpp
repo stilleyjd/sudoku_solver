@@ -11,15 +11,15 @@
 
 
 // #define FILENAME "P1.txt" // For initial development of simple solver (Naked Singles)
-// #define FILENAME "P2.txt" // Need more advanced techniques to solve
-#define FILENAME "P3.txt" // Solved with only Naked singles and hidden singles
-// #define FILENAME "P4.txt" // Solved with only Naked singles and hidden singles
+#define FILENAME "P2.txt" // Need more advanced techniques to solve
+// #define FILENAME "P3.txt" // Solved with only Naked singles and hidden singles
+//#define FILENAME "P4.txt" // Solved with only Naked singles and hidden singles
 
-#define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
+// #define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
 
-//#ifndef PATHNAME
-//#include <windows.h>
-//#endif
+#ifndef PATHNAME
+#include <windows.h>
+#endif
 
 void display_board(int board[LEN][LEN]) {
     printf("\nBoard State: \n\n");
@@ -105,16 +105,16 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
     //    http://www.cplusplus.com/forum/windows/187372/ 
 
-//	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
-//    GetCurrentDirectoryA(FILENAME_MAX, buff);
-//    // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
-//    correct_path_name(buff);  // TODO: Figure this out later...
-//    printf("Corrected file dir: '%s'\n", buff);
-//	#else
+	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
+    GetCurrentDirectoryA(FILENAME_MAX, buff);
+    // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
+    correct_path_name(buff);  // TODO: Figure this out later...
+    printf("Corrected file dir: '%s'\n", buff);
+	#else
     // Workaround...
     strcpy(buff, PATHNAME);
     printf("Current working dir: '%s'\n", buff);
-//	#endif // !PATHNAME
+	#endif // !PATHNAME
 
     do {
         #ifndef FILENAME // If filename is not specified above, ask the user
@@ -143,7 +143,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     } while (fp == NULL);
 
     // Read these in the values from the file 
-    printf("\nReading in contnets from: '%s'\n", path_name);
+    printf("\nReading in contents from: '%s'\n", path_name);
     printf("---------------------------------------------------------------\n");
 
     item = fgetc(fp);
@@ -205,8 +205,10 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     printf("\n---------------------------------------------------------------\n\n");
 
     display_board(board);
+	#ifndef FILENAME
     printf("\n Is this board correct? Press any key to continue.");
     scanf("%c", &item);
+	#endif
 
     // Init counter
     for (int row = 0; row < LEN; row++) {
