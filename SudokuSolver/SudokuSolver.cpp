@@ -11,6 +11,7 @@ Note: most of techniques here come from:
 
 #include <iostream>
 #include <time.h>
+#include <cstring>
 #include "board_globals.h"
 #include "read_and_display.h"
 #include "algorithms.h"

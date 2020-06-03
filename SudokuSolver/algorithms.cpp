@@ -1,7 +1,7 @@
 /* 
-Code to implment various Sudoku solver techniques 
+Code to implement various Sudoku solving techniques
 
-Refences: 
+References:
     Davis, Tom. “The Mathematics of Sudoku”. 21 Nov 2007. 15 Feb 2008
         http://www.geometer.org/mathcircles/sudoku.pdf.
 */
@@ -9,6 +9,7 @@ Refences:
 #include <iostream>
 #include <stdlib.h>
 #include <math.h>
+#include <cstring>
 #include "algorithms.h"
 #include "read_and_display.h"
 
@@ -156,13 +157,14 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
 }
 
 
-int hidden_single_group_search(int row, int col, int ind, int rb, int re, int cb, int ce, int candidates[LEN][LEN][LEN]) {
-    int count = 0;
+int hidden_single_group_search(int row, int col, int ind, int row_start, int row_end, int col_start, int col_end,
+		int candidates[LEN][LEN][LEN]) {
+	int count = 0;
     int c, r;
     int result = 0;
 
-    for (r = rb; r < re; r++) {
-        for (c = cb; c < ce; c++) {
+    for (r = row_start; r < row_end; r++) {
+        for (c = col_start; c < col_end; c++) {
             // printf("  Candidates for r %d, c %d: ", r + 1, c + 1);
             // display_candidates(candidates[r][c]);
             if (candidates[r][c][ind] == 1) {

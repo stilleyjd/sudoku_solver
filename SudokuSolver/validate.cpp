@@ -30,9 +30,8 @@ void check_area(int board[LEN][LEN], int row_start, int row_end, int col_start, 
 
 void check_for_double_values(int board[LEN][LEN], int double_coords[]) {
     // Checks the board to make sure there is only one instance of each number in each row, col, and box
-    // If there is an instance of multiple vaues, sets values to row and col where occurance found
+    // If there is an instance of multiple values, sets values to row and col where occurance found
     int r, c;
-    int result = 0;
 
     printf("Checking the board for invalid values...\n");
 
