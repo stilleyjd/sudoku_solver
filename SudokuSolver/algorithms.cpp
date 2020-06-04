@@ -70,13 +70,13 @@ void display_candidates(int candidate_values[]) {
     printf("\n");
 }
 
-void naked_single_elim(int board[LEN][LEN], int r, int c, int candidate_values[LEN]) {
-    // Elimate candidate values using the naked singles method.
+void naked_single_elim_candidate(int board[LEN][LEN], int r, int c, int candidate_values[LEN]) {
+    // Eliminate candidate values using the naked singles method.
     int* value = &board[r][c];
     // printf("Row %d, Col %d, Value %d, Address %d\n", row, i, *value, value);
     if (*value != 0) {
-        // If there is a value, remove that as a candiate
-        candidate_values[*value - 1] = 0; // acount for 0-based indexes...
+        // If there is a value, remove that as a candidate
+        candidate_values[*value - 1] = 0; // account for 0-based indexes...
     }
 }
 
@@ -98,7 +98,7 @@ int check_search_result(int candidate_values[LEN]) {
             // If only 1 possible value, the solution must that
             if (candidate_values[i] == 1) {
                 // printf("Found a result of: %d ", i + 1);
-                return i + 1;  // acount for 0-based indexes...
+                return i + 1;  // account for 0-based indexes...
             }
         }
     }
@@ -117,22 +117,22 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     for (row = 0; row < LEN; row++) {
         for (col = 0; col < LEN; col++) {
             if (board[row][col] == 0) {
-                // printf("\Nacked Single search for results to: row %d, col %d\n", row+1, col+1);
+                // printf("\Naked Single search for results to: row %d, col %d\n", row+1, col+1);
 
                 // 1st, look through the same row
                 for (c = 0; c < LEN; c++) {
-                    naked_single_elim(board, row, c, candidates[row][col]);
+                	naked_single_elim_candidate(board, row, c, candidates[row][col]);
                 }
 
                 // 2nd, look through the same column
                 for (r = 0; r < LEN; r++) {
-                    naked_single_elim(board, r, col, candidates[row][col]);
+                	naked_single_elim_candidate(board, r, col, candidates[row][col]);
                 }
 
                 // 3rd, check the 3x3 box it is in
                 for (r = (row / NUM) * NUM; r < (row / NUM + 1) * NUM; r++) {
                     for (c = (col / NUM) * NUM; c < (col / NUM + 1) * NUM; c++) {
-                        naked_single_elim(board, r, c, candidates[row][col]);
+                    	naked_single_elim_candidate(board, r, c, candidates[row][col]);
                     }
                 }
 
@@ -157,41 +157,38 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
 }
 
 
-int hidden_single_group_search(int row, int col, int ind, int row_start, int row_end, int col_start, int col_end,
+int hidden_single_group_search(int ind, int row_start, int row_end, int col_start, int col_end,
 		int candidates[LEN][LEN][LEN]) {
-	int count = 0;
     int c, r;
-    int result = 0;
+	int count = 0;
 
     for (r = row_start; r < row_end; r++) {
         for (c = col_start; c < col_end; c++) {
-            // printf("  Candidates for r %d, c %d: ", r + 1, c + 1);
-            // display_candidates(candidates[r][c]);
             if (candidates[r][c][ind] == 1) {
                 count++;
             }
         }
     }
     // If only one cell has this value, then it must be the winner :)
-    if (count == 1) {  
-        result = ind + 1; // Account for 0-based index...
+    if (count == 1) {
+    	return ind + 1; // Account for 0-based index...
     }
-    return result;
+    return 0;
 }
 
 int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     /* Hidden Single: a cell for which there exists a unique candidate based on the constraint
-        that no other cell in one of its groups can be that number (Davis, 2007) */
+     *  that no other cell in one of its groups can be that number (Davis, 2007) */
     int row = 0;
     int col = 0;
-    int i;
+    int ind;
 
     int result;
     int num_cells_completed = 0;
 
     for (row = 0; row < LEN; row++) {
         for (col = 0; col < LEN; col++) {
-            if (board[row][col] == 0) {
+            if (board[row][col] == 0) {  // If cell is not yet solved
                 // Search the cell's groups (the row, column and box of the cell at location "row", "col")
                 //    to see if there is a candidate value that only this cell has
 
@@ -199,51 +196,103 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                 result = 0;
                 
                 // Loop through all candidate values, checking if they're unique in their row, col, or box
-                for (i = 0; i < LEN; i++) {
-                    if (candidates[row][col][i] == 1) {
-                        // printf("Checking value of %d\n", i + 1);
-
+                for (ind = 0; ind < LEN; ind++) {
+                    if (candidates[row][col][ind] == 1) {
                         // 1st, look through the same row
-                        // printf("Hidden Single row search: \n");
-                        result = hidden_single_group_search(row, col, i, row, row + 1, 0, LEN, candidates);
+                        result = hidden_single_group_search(ind, row, row + 1, 0, LEN, candidates);
                         if (result > 0) {
                             break;
                         }
 
                         // 2nd, look through the same column
-                        // printf("Hidden Single column search: \n");
-                        result = hidden_single_group_search(row, col, i, 0, LEN, col, col+1, candidates);
+                        result = hidden_single_group_search(ind, 0, LEN, col, col+1, candidates);
                         if (result > 0) {
                             break;
                         }
 
                         // 3rd, check the 3x3 box it is in
-                        result = hidden_single_group_search(row, col, i, 
+                        result = hidden_single_group_search(ind,
                             (row / NUM) * NUM, (row / NUM + 1) * NUM, 
                             (col / NUM) * NUM, (col / NUM + 1) * NUM, candidates);
                         if (result > 0) {
                             break;
                         }
-                    } // candidate value
-                } // i 
+                    } // if ind is a candidate value
+                } // ind
 
                 // If successful, recored the result and exit 
                 if (result != 0) {
                     board[row][col] = result;
                     num_cells_completed++;
-                    // Remove other candidates from this cell
+                    // Remove candidates from this cell
                     memset(candidates[row][col], 0, sizeof(candidates[row][col]));
 
                     printf("\nFound Hidden Singles result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
                     return num_cells_completed;
                 }
-
-            } // if no value
+            } // if cell not solved
         } // col
     } // row
     return num_cells_completed;
 }
 
+// *******************************************************************************************
+// The following methods are used to remove candidates (but do not directly determine board values)
+int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
+	/*
+	 * A method of elimination for which a number within a box is restricted to a specific
+	 * 	  row or column and therefore can be excluded from the remaining cells in the
+	 * 	  corresponding row or column outside of the selected box
+	 * OR:
+	 * A method of elimination for which a number within a row or column is restricted
+	 * 	  to a specific box and therefore can be excluded from the remaining cells within
+	 * 	  the box.  (Davis, 2007)
+	 * see: http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
+	 * 	  and?: https://www.learn-sudoku.com/omission.html
+     *
+	 * This function uses the locked candidate technique to remove candidates from some cells
+	 * return: how many times the locked candidate found values to remove
+	 */
+
+	int num_times_used = 0;
+
+
+	return num_times_used;
+}
+
+// int naked_pairs_search(int candidates[LEN][LEN][LEN]) {
+// 	/* Naked Pairs:
+// 	 * This method of elimination pertains to the situation in which two numbers
+// 	 *   are candidates in exactly two cells of a given group. Consequently, those two numbers
+// 	 *   are eliminated as candidates in all other cells within the group (Davis, 2007).
+// 	 * see: http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
+// 	 *   and https://www.learn-sudoku.com/naked-pairs.html
+// 	 *
+// 	 * This function uses the naked pairs technique to remove candidates from some cells
+// 	 * return: how many times the naked pairs technique found values to remove
+// 	 */
+//
+// }
+
+int hidden_pairs_search(int candidates[LEN][LEN][LEN]) {
+	/*
+	 * A Hidden Pair is basically just a “buried” Naked Pair.
+	 *   It occurs when two pencil marks appear in exactly two cells within the same house (row, column, or block).
+	 *   However, the pair is not "Naked" - it is buried (or hidden) among other pencil marks
+	 * source: https://www.learn-sudoku.com/hidden-pairs.html
+	 *
+	 * This function uses the hidden pairs technique to remove candidates from some cells
+	 * return: how many times the hidden pairs technique found values to remove
+	 */
+
+	int num_times_used = 0;
+
+
+	return num_times_used;
+}
+// *******************************************************************************************
+
+// Finally, if all else fails, this technique will just pick a value from the cell with fewest candidates
 int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     int row = 0;
     int col = 0;
