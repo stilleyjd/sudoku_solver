@@ -118,13 +118,7 @@ int main()
             continue;
 		}
 
-        // TODO: Locked Candidate: article
-        // 	  http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
-        //    http://www.angusj.com/sudoku/hints.php
-		//    http://hodoku.sourceforge.net/en/tech_intersections.php
-		//  Omission: https://www.learn-sudoku.com/omission.html
-        //     when a candidate are contained inside a single house, pencil marks in other houses can be removed.
-        //  Are locked candidate and omission the same??
+        // TODO: Locked Candidate
 		printf("\nNo new cells could be solved using Hidden Singles.\n"
 				"    Trying a Locked Candidate Search\n");
 		num_eliminations = locked_candidate_search(candidates);
