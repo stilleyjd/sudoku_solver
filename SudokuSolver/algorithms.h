@@ -8,6 +8,6 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]);
 
 int locked_candidate_search(int candidates[LEN][LEN][LEN]);
 
-int hidden_pairs_search(int candidates[LEN][LEN][LEN]);
+int hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size);
 
 int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]);

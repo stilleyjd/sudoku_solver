@@ -248,13 +248,50 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	 * 	  to a specific box and therefore can be excluded from the remaining cells within
 	 * 	  the box.  (Davis, 2007)
 	 * see: http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
-	 * 	  and?: https://www.learn-sudoku.com/omission.html
-     *
+	 * 	 Omission: https://www.learn-sudoku.com/omission.html
+     *   http://www.angusj.com/sudoku/hints.php
+   	 *   http://hodoku.sourceforge.net/en/tech_intersections.php
+	 *
 	 * This function uses the locked candidate technique to remove candidates from some cells
+	 * 2 sub types:
+	 * 	  Pointing: If in a block all candidates of a certain digit are confined to a row or column,
+	 * 		that digit cannot appear outside of that block in that row or column.
+	 * 	  Claiming: If in a row (or column) all candidates of a certain digit are confined to one block,
+	 * 	    that candidate that be eliminated from all other cells in that block.
 	 * return: how many times the locked candidate found values to remove
 	 */
 
 	int num_times_used = 0;
+	int box;
+	int row_start[LEN] = {0, 0, 0, 3, 3, 3, 6, 6, 6};
+	int col_start[LEN] = {0, 3, 6, 0, 3, 6, 0, 3, 6};
+	int num_groups = 0;  // TODO: Rename better
+	int i;
+	int r, c;
+
+	// 1st, look through rows in each box (pointing)
+	for (box = 0; r < LEN; box++) {
+		for (i = 0; i < LEN; i++) {
+			num_groups = 0; // reset the number of candidate rows...
+			for (r = row_start(box); r < row_start(box) + NUM; r++) {
+				for (c = col_start(box); c < col_start(box) + NUM; c++) {
+					if (candidates[r][c][i] == 1) {
+						// DO something here!
+						num_groups++;
+					}
+				} // column
+			} // row
+			if (num_groups == 1) {
+				// If the value was only found in 1 row
+				// TODO: Eliminate other candidates in that row
+			}
+		} // value
+	} // box
+
+
+	// 2nd, look through columns in each box (pointing)
+
+	// 3rd, look through 3x3 boxes (claiming)
 
 
 	return num_times_used;
@@ -274,15 +311,17 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 //
 // }
 
-int hidden_pairs_search(int candidates[LEN][LEN][LEN]) {
+int hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size) {
 	/*
-	 * A Hidden Pair is basically just a “buried” Naked Pair.
+	 * A Hidden Pair is basically just a “buried” Naked Pair. (so try this first?)
 	 *   It occurs when two pencil marks appear in exactly two cells within the same house (row, column, or block).
 	 *   However, the pair is not "Naked" - it is buried (or hidden) among other pencil marks
 	 * source: https://www.learn-sudoku.com/hidden-pairs.html
 	 *
 	 * This function uses the hidden pairs technique to remove candidates from some cells
-	 * return: how many times the hidden pairs technique found values to remove
+	 * set_size: the size of hidden sets to look for. 2 = hidden pairs, 3 = hidden triplets, etc.
+	 * return: how many times the hidden sets technique found values to remove
+	 *
 	 */
 
 	int num_times_used = 0;

@@ -120,7 +120,9 @@ int main()
 
         // TODO: Locked Candidate: article
         // 	  http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
-        // TODO: Omission: https://www.learn-sudoku.com/omission.html
+        //    http://www.angusj.com/sudoku/hints.php
+		//    http://hodoku.sourceforge.net/en/tech_intersections.php
+		//  Omission: https://www.learn-sudoku.com/omission.html
         //     when a candidate are contained inside a single house, pencil marks in other houses can be removed.
         //  Are locked candidate and omission the same??
 		printf("\nNo new cells could be solved using Hidden Singles.\n"
@@ -138,10 +140,10 @@ int main()
 
         // TODO: Hidden Pairs: similar to naked pairs  -- Try this before naked pairs!!
         // 		https://www.learn-sudoku.com/hidden-pairs.html
-        //  Also, hidden triplets and quads...
+        //  Also, can extend to hidden triplets and quadruplets ...
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying a Naked/Hidden Pairs Search\n");
-		num_eliminations = hidden_pairs_search(candidates);
+		num_eliminations = hidden_sets_search(candidates, 2);
 		num_times_hidden_pairs += num_eliminations;
 
 		if (num_eliminations > 0) {
@@ -154,7 +156,7 @@ int main()
         // Finally, try Random Value search
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying randomized solution...\n");
-		// Final approach: Try to randomize the cells with fewest opitons to see if that gives a valid solution
+		// Final approach: Try to randomize the cells with fewest options to see if that gives a valid solution
 		num_cells_found = randomized_value_board_search(board, candidates);
 		num_empty_cells -= num_cells_found;
 		num_times_random += num_cells_found;
