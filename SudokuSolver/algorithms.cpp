@@ -238,6 +238,25 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
 
 // *******************************************************************************************
 // The following methods are used to remove candidates (but do not directly determine board values)
+
+int remove_candidate(int candidates[LEN][LEN][LEN], int ind,
+		int row_start, int row_end, int col_start, int col_end) {
+	int num_removed = 0;
+	int r, c;
+
+	for (r = row_start; r < row_end; r++) {
+		for (c = col_start; c < col_end; c++) {
+			if (candidates[r][c][ind] == 1) {
+				candidates[r][c][ind] = 0;
+				num_removed++;
+				printf("Candidate value of %d was removed from cell at row %d, col %d", ind+1, r+1, c+1);
+			}
+		} // col
+	} // row
+
+	return num_removed;
+}
+
 int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	/*
 	 * A method of elimination for which a number within a box is restricted to a specific
@@ -265,7 +284,9 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	int box;
 	int row_start[LEN] = {0, 0, 0, 3, 3, 3, 6, 6, 6};
 	int col_start[LEN] = {0, 3, 6, 0, 3, 6, 0, 3, 6};
+	int found_in_group = 0;
 	int num_groups = 0;  // TODO: Rename better
+	int num_removed;
 	int i;
 	int r, c;
 
@@ -273,17 +294,35 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	for (box = 0; r < LEN; box++) {
 		for (i = 0; i < LEN; i++) {
 			num_groups = 0; // reset the number of candidate rows...
-			for (r = row_start(box); r < row_start(box) + NUM; r++) {
-				for (c = col_start(box); c < col_start(box) + NUM; c++) {
+			for (r = row_start[box]; r < row_start[box] + NUM; r++) {
+				found_in_group = 0;  // reset if candidate was found in that row
+				for (c = col_start[box]; c < col_start[box] + NUM; c++) {
 					if (candidates[r][c][i] == 1) {
 						// DO something here!
-						num_groups++;
+						if (found_in_group == 0) {
+							num_groups++;
+							found_in_group++;
+						}
 					}
 				} // column
 			} // row
 			if (num_groups == 1) {
 				// If the value was only found in 1 row
 				// TODO: Eliminate other candidates in that row
+				printf("Candidate value of %d was only found in row %d of box %d", i+1, r+1, box+1);
+				printf("Eliminating other candidates of %d in row %d", i+1, r+1);
+				// Eliminate in rows to the right
+				if (col_start[box] < LEN-NUM) {
+					num_removed = remove_candidate(candidates, i, r, r+1, 0, col_start[box]);
+				}
+				// Eliminate in rows to the left
+				if (col_start[box] > 0) {
+					num_removed = remove_candidate(candidates, i, r, r+1, col_start[box] + 3, LEN);
+				}
+				if (num_removed > 0) {
+					num_times_used++;
+				}
+
 			}
 		} // value
 	} // box
