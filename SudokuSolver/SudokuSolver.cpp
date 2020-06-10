@@ -93,7 +93,12 @@ int main()
             break;
         } else if (num_cells_found < 0) { // If something went wrong (return value is < 0), restart
             num_fails++;
-            if (num_fails > 10) {
+            if (used_random_values == 0) {
+            	// If failed when not using random values, something is really wrong!!!
+                printf("Failed without using random values, only deterministic means!!!.\n");
+                printf("Something went really wrong!!  Giving up...\n");
+                break;
+            } else if (num_fails > 10) {
                 printf("Failed too many times. Giving up...\n");
                 break;
             }
@@ -108,15 +113,18 @@ int main()
             continue;
         }
 
-        // Hidden Singles
-		printf("\nNo new cells could be solved in the last iteration.\n"
-				"    Trying Hidden Singles Search\n");
-		num_cells_found = hidden_single_search(board, candidates);
-		num_times_hidden_single += num_cells_found;
-		num_empty_cells -= num_cells_found;
-		if (num_cells_found > 0) {
-            continue;
-		}
+//        // Hidden Singles
+//		printf("\nNo new cells could be solved in the last iteration.\n"
+//				"    Trying Hidden Singles Search\n");
+//		num_cells_found = hidden_single_search(board, candidates);
+//		num_times_hidden_single += num_cells_found;
+//		num_empty_cells -= num_cells_found;
+//		if (num_cells_found > 0) {
+//            continue;
+//		}
+
+        // If made it this far, then display candidate values for next algorithms
+        display_candidates(board, candidates);
 
         // TODO: Locked Candidate
 		printf("\nNo new cells could be solved using Hidden Singles.\n"

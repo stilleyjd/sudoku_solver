@@ -11,9 +11,9 @@
 
 
 // #define FILENAME "P1.txt" // For initial development of simple solver (Naked Singles)
-#define FILENAME "P2.txt" // Need more advanced techniques to solve
+// #define FILENAME "P2.txt" // Need more advanced techniques to solve
 // #define FILENAME "P3.txt" // Solved with only Naked singles and hidden singles
-//#define FILENAME "P4.txt" // Solved with only Naked singles and hidden singles
+#define FILENAME "P4.txt" // Solved with only Naked singles and hidden singles
 
 // #define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
 
@@ -22,7 +22,7 @@
 #endif
 
 void display_board(int board[LEN][LEN]) {
-    printf("\nBoard State: \n\n");
+    printf("\nBoard State: \n");
     printf(" -----------------------------------\n");  // Top box line
 
     for (int row = 0; row < LEN; row++) {
@@ -224,5 +224,41 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         }
     }
     return num_empty_cells;
+}
 
+void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+    printf("\nCandidate State: \n");
+    printf(" -----------------------------------------------------------------------------------------\n");  // Top box line
+
+    for (int row = 0; row < LEN; row++) {
+        printf("| "); // Print the left box line
+        for (int col = 0; col < LEN; col++) {
+            if (board[row][col] == 0) {
+            	for (int ind = 0; ind < LEN; ind++) {
+            		if (candidates[row][col][ind] == 1) {
+            			printf("%d", ind+1);
+            		} else {
+            			printf("-");
+            		}
+            	}
+            }
+            else {
+                printf("    %d    ", board[row][col]);
+            }
+            // Pad with line (if section end) or spaces
+            if (col % NUM == NUM - 1) {
+                printf("|");
+            }
+            else {
+                printf(" ");
+            }
+        }
+        printf("\n"); // Start a new row
+        if (row % NUM == NUM - 1) {
+        	printf(" -----------------------------------------------------------------------------------------\n");  // Bottom section line
+        }
+        else {
+            printf("|                              |                             |                             |\n");  // If empty row, just print separators
+        }
+    }
 }

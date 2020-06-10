@@ -249,7 +249,7 @@ int remove_candidate(int candidates[LEN][LEN][LEN], int ind,
 			if (candidates[r][c][ind] == 1) {
 				candidates[r][c][ind] = 0;
 				num_removed++;
-				printf("Candidate value of %d was removed from cell at row %d, col %d", ind+1, r+1, c+1);
+				// printf("  Candidate value of %d was removed from cell at row %d, col %d\n", ind+1, r+1, c+1);
 			}
 		} // col
 	} // row
@@ -281,58 +281,136 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	 */
 
 	int num_times_used = 0;
-	int box;
-	int row_start[LEN] = {0, 0, 0, 3, 3, 3, 6, 6, 6};
-	int col_start[LEN] = {0, 3, 6, 0, 3, 6, 0, 3, 6};
-	int found_in_group = 0;
-	int num_groups = 0;  // TODO: Rename better
+
+	int num_groups_found = 0;
+	int spot_found = 0;
 	int num_removed;
-	int i;
+
+	int i, n;
 	int r, c;
 
-	// 1st, look through rows in each box (pointing)
-	for (box = 0; r < LEN; box++) {
-		for (i = 0; i < LEN; i++) {
-			num_groups = 0; // reset the number of candidate rows...
+	int box;
+	int row_start[LEN] = {0, 0, 0, 3, 3, 3, 6, 6, 6};  // TODO: Update to make these scale with NUM/LEN
+	int col_start[LEN] = {0, 3, 6, 0, 3, 6, 0, 3, 6};
+
+	for (i = 0; i < LEN; i++) {
+
+		// 1st, look through rows and columns in each box (pointing)
+		for (box = 0; box < LEN; box++) {
+
+			// A: look through rows
+			num_groups_found = 0; // reset the number of rows the value was found
+ 			spot_found = -1;  // Reset where a locked candidate was found (0 is a possible value)
 			for (r = row_start[box]; r < row_start[box] + NUM; r++) {
-				found_in_group = 0;  // reset if candidate was found in that row
+				if (num_groups_found > 1) { break; } // Quit searching if multiple results found
 				for (c = col_start[box]; c < col_start[box] + NUM; c++) {
 					if (candidates[r][c][i] == 1) {
-						// DO something here!
-						if (found_in_group == 0) {
-							num_groups++;
-							found_in_group++;
+						// If a candidate found when there already is one, stop looking...
+						if (spot_found >= 0) {
+							num_groups_found = 2;  // Mark that multiple results found
+							break;
 						}
+						// If a new candidate found, then mark it and check the next group (row)
+						spot_found = r;
+						num_groups_found = 1;
+						break;
 					}
 				} // column
 			} // row
-			if (num_groups == 1) {
-				// If the value was only found in 1 row
-				// TODO: Eliminate other candidates in that row
-				printf("Candidate value of %d was only found in row %d of box %d", i+1, r+1, box+1);
-				printf("Eliminating other candidates of %d in row %d", i+1, r+1);
-				// Eliminate in rows to the right
-				if (col_start[box] < LEN-NUM) {
-					num_removed = remove_candidate(candidates, i, r, r+1, 0, col_start[box]);
+			if (num_groups_found == 1) {
+				// If the value was only found in 1 row, eliminate other candidates in that row
+				if (col_start[box] > 0) { // Eliminate in rows to the right
+					num_removed = remove_candidate(candidates, i, spot_found, spot_found+1, 0, col_start[box]);
 				}
-				// Eliminate in rows to the left
-				if (col_start[box] > 0) {
-					num_removed = remove_candidate(candidates, i, r, r+1, col_start[box] + 3, LEN);
+				if (col_start[box]+NUM < LEN) { // Eliminate in rows to the left
+					num_removed += remove_candidate(candidates, i, spot_found, spot_found+1, col_start[box]+NUM, LEN);
 				}
+
 				if (num_removed > 0) {
+					printf("Locked Candidate value of %d was only found in row %d of box %d\n", i+1, spot_found+1, box+1);
 					num_times_used++;
 				}
-
 			}
-		} // value
-	} // box
+
+			// B: look through columns
+			num_groups_found = 0; // reset the number of columns the value was found
+ 			spot_found = -1;  // Reset where a locked candidate was found (0 is a possible value)
+			for (c = col_start[box]; c < col_start[box] + NUM; c++) {
+				if (num_groups_found > 1) { break; } // Quit searching if multiple results found
+				for (r = row_start[box]; r < row_start[box] + NUM; r++) {
+					if (candidates[r][c][i] == 1) {
+						// If a candidate found when there already is one, stop looking...
+						if (spot_found >= 0) {
+							num_groups_found = 2;  // Mark that multiple results found
+							break;
+						}
+						// If a new candidate found, then mark it and check the next group (col)
+						spot_found = c;
+						num_groups_found = 1;
+						break;
+					}
+				} // column
+			} // row
+			if (num_groups_found == 1) {
+				// If the value was only found in 1 column, eliminate other candidates in that column
+				if (row_start[box] > 0) { // Eliminate in columns above
+					num_removed = remove_candidate(candidates, i, 0, row_start[box], spot_found, spot_found+1);
+				}
+				if (row_start[box]+NUM < LEN) { // Eliminate in columns below
+					num_removed += remove_candidate(candidates, i, row_start[box]+NUM, LEN, spot_found, spot_found+1);
+				}
+
+				if (num_removed > 0) {
+					printf("Locked Candidate value of %d was only found in column %d of box %d\n", i+1, spot_found+1, box+1);
+					num_times_used++;
+				}
+			}
+
+		} // box
 
 
-	// 2nd, look through columns in each box (pointing)
+		// 2nd, look through boxes in each row / column (claiming)
+		// A: look through rows
+		for (r = 0; r < LEN; r++) {
+			num_groups_found = 0; // reset the number of rows the value was found
+			spot_found = -1;  // Reset where a locked candidate was found (0 is a possible value)
+			// Look through boxes in that row
+			for (n = 0; n < NUM; n++) {
+				if (num_groups_found > 1) { break; } // Quit searching if multiple results found
+				for (c = n*NUM; c < n*(NUM + 1); c++) { // Look through columns in that box
+					if (candidates[r][c][i] == 1) {
+						// If a candidate found when there already is one, stop looking...
+						if (spot_found >= 0) {
+							num_groups_found = 2;  // Mark that multiple results found
+							break;
+						}
+						// If a new candidate found, then mark it and check the next group (row)
+						spot_found = n;
+						num_groups_found = 1;
+						break;
+					}
+				} // columns in box
+			} // boxes in row
+			if (num_groups_found == 1) {
+				// TODO: If the value was only found in 1 box, eliminate candidate in other rows in that box
+				box = spot_found + r%3;  // ???
+//				if (col_start[box] > 0) { // Eliminate in rows to the right
+//					num_removed = remove_candidate(candidates, i, spot_found, spot_found+1, 0, col_start[box]);
+//				}
+//				if (col_start[box]+NUM < LEN) { // Eliminate in rows to the left
+//					num_removed += remove_candidate(candidates, i, spot_found, spot_found+1, col_start[box]+NUM, LEN);
+//				}
+//
+//				if (num_removed > 0) {
+//					printf("Locked Candidate value of %d was only found in row %d of box %d\n", i+1, spot_found+1, box+1);
+//					num_times_used++;
+//				}
+			}
 
-	// 3rd, look through 3x3 boxes (claiming)
 
+		} // row
 
+	} // value
 	return num_times_used;
 }
 
