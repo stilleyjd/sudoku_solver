@@ -74,7 +74,8 @@ int main()
 
     	if (round > 0) {
     		// Display the results from last round
-    		display_board(board);
+    		// display_board(board);
+    		display_candidates(board, candidates);
     		printf("Previous number of cells completed: %d\n", LEN*LEN - num_empty_cells_prev);
     		printf("Round %d: number of cells completed: %d\n\n", round, LEN * LEN - num_empty_cells);
     	}
@@ -113,20 +114,21 @@ int main()
             continue;
         }
 
-//        // Hidden Singles
-//		printf("\nNo new cells could be solved in the last iteration.\n"
-//				"    Trying Hidden Singles Search\n");
-//		num_cells_found = hidden_single_search(board, candidates);
-//		num_times_hidden_single += num_cells_found;
-//		num_empty_cells -= num_cells_found;
-//		if (num_cells_found > 0) {
-//            continue;
-//		}
+        // Hidden Singles
+		printf("\nNo new cells could be solved in the last iteration.\n"
+				"    Trying Hidden Singles Search\n");
+		num_cells_found = hidden_single_search(board, candidates);
+		num_times_hidden_single += num_cells_found;
+		num_empty_cells -= num_cells_found;
+		if (num_cells_found > 0) {
+            continue;
+		}
 
         // If made it this far, then display candidate values for next algorithms
         display_candidates(board, candidates);
 
-        // TODO: Locked Candidate
+        // Locked Candidate
+        // TODO: Quit once one elimination has been made??
 		printf("\nNo new cells could be solved using Hidden Singles.\n"
 				"    Trying a Locked Candidate Search\n");
 		num_eliminations = locked_candidate_search(candidates);
@@ -135,12 +137,15 @@ int main()
 			continue;
 		}
 
-        // TODO: Naked Pairs: article and https://www.learn-sudoku.com/naked-pairs.html
+		// If made it this far, then display candidate values for next algorithms
+		        display_candidates(board, candidates);
 
+        // TODO: Naked Pairs: article and https://www.learn-sudoku.com/naked-pairs.html
         // TODO: Naked Triplets+ : similar to naked pairs
         //		https://www.learn-sudoku.com/naked-triplets.html
 
-        // TODO: Hidden Pairs: similar to naked pairs  -- Try this before naked pairs!!
+        // TODO: Hidden Pairs: similar to naked pairs
+		//        -- Try this before naked pairs, as naked pairs is a sub-set of this!!!
         // 		https://www.learn-sudoku.com/hidden-pairs.html
         //  Also, can extend to hidden triplets and quadruplets ...
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
