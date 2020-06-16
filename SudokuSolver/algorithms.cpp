@@ -61,11 +61,9 @@ int collapse_candidate(int candidate_array[]) {
 }
 */
 
-void display_candidates(int candidate_values[]) {
-    for (int i = 0; i < LEN; i++) {
-        if (candidate_values[i] > 0) {
-            printf("%d, ", i + 1);
-        }
+void display_array_values(int len, int array_values[]) {
+    for (int i = 0; i < len; i++) {
+		printf("%d, ", array_values[i]);
     }
     printf("\n");
 }
@@ -290,8 +288,19 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	int r, c;
 
 	int box;
-	int row_start[LEN] = {0, 0, 0, 3, 3, 3, 6, 6, 6};  // TODO: Update to make these scale with NUM/LEN
-	int col_start[LEN] = {0, 3, 6, 0, 3, 6, 0, 3, 6};
+	int row_start[LEN] = { 0 };
+	int col_start[LEN] = { 0 };
+
+	for (n = 0; n < LEN; n++) {
+		// Determine the row and column of the start of each box (with size of NUM * NUM)
+		row_start[n] = (int) (n/NUM) * NUM;
+		col_start[n] = (int) (n%NUM) * NUM;
+	}
+
+	//	printf("Row start values: ");
+	//	display_array_values(LEN, row_start);
+	//	printf("Col start values: ");
+	//	display_array_values(LEN, col_start);
 
 	for (i = 0; i < LEN; i++) {
 
@@ -486,6 +495,12 @@ int hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size) {
 	 */
 
 	int num_times_used = 0;
+
+	// A: Search in rows
+
+	// B: Search in columns
+
+	// C: Search in boxes
 
 
 	return num_times_used;

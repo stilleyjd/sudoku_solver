@@ -14,6 +14,9 @@
 #define FILENAME "P2.txt" // Uses naked singles, hidden singles, locked candidates, but still needs more advanced techniques to solve
 // #define FILENAME "P3.txt" // Solved with only Naked singles and hidden singles
 // #define FILENAME "P4.txt" // Solved with only Naked singles and hidden singles
+// #define FILENAME "P16x16-1.txt" // TODO: Try this to see if different size can be solved
+//    -- Also need to change globals... Should those be defined here instead??
+
 
 // #define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
 
@@ -47,7 +50,7 @@ void display_board(int board[LEN][LEN]) {
             printf(" -----------------------------------\n");  // Bottom section line
         }
         else {
-            printf("|           |           |           |\n");  // If empty row, just print seperators
+            printf("|           |           |           |\n");  // If empty row, just print separators
         }
     }
 }

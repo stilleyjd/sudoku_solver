@@ -90,23 +90,26 @@ int main()
             num_empty_cells -= num_cells_found;
         } while (num_cells_found > 0);
 
+        // Check board conditions before moving on
         if (num_empty_cells == 0) {
-            break;
-        } else if (num_cells_found < 0) { // If something went wrong (return value is < 0), restart
+            break;  // If nothing else to solve, quit
+        } else if (num_cells_found < 0) { // If something went wrong (no possible solution for a cell)
             num_fails++;
+
             if (used_random_values == 0) {
-            	// If failed when not using random values, something is really wrong!!!
+            	// If failed when not using random values, something is really wrong!  Quit and fix!!!
                 printf("Failed without using random values, only deterministic means!!!.\n");
-                printf("Something went really wrong!!  Giving up...\n");
+                printf("    Something went really wrong! You need to fix your code!\n");
                 break;
-            } else if (num_fails > 10) {
+            } else if (num_fails > 20) {
                 printf("Failed too many times. Giving up...\n");
                 break;
             }
             else {
                 printf("Resetting board back to last deterministic state.\n");
             }
-            // Reset the board and counters
+
+            // Reset the board and counters, then start over
             memcpy(board, initial_board, sizeof(board));
             memcpy(candidates, initial_candidates, sizeof(candidates));
             num_empty_cells = initial_num_empty_cells;
@@ -121,7 +124,7 @@ int main()
 		num_times_hidden_single += num_cells_found;
 		num_empty_cells -= num_cells_found;
 		if (num_cells_found > 0) {
-            continue;
+            continue;  // if hidden singles worked, go back to naked singles
 		}
 
         // If made it this far, then display candidate values for next algorithms
@@ -134,36 +137,34 @@ int main()
 		num_eliminations = locked_candidate_search(candidates);
 		num_times_locked_candidate += num_eliminations;
 		if (num_eliminations > 0) {
-			continue;
+			continue;  // If locked candidates did something, give previous techniques another chance
 		}
 
-		// If made it this far, then display candidate values for next algorithms
-		        display_candidates(board, candidates);
-
-        // TODO: Naked Pairs: article and https://www.learn-sudoku.com/naked-pairs.html
-        // TODO: Naked Triplets+ : similar to naked pairs
-        //		https://www.learn-sudoku.com/naked-triplets.html
-
-        // TODO: Hidden Pairs: similar to naked pairs
-		//        -- Try this before naked pairs, as naked pairs is a sub-set of this!!!
+        // TODO: Naked/Hidden Sets. Includes:
+	    //	Naked Pairs: article and https://www.learn-sudoku.com/naked-pairs.html
+        // 	Naked Triplets+ : similar to naked pairs: https://www.learn-sudoku.com/naked-triplets.html
+        // 	Hidden Pairs: similar to naked pairs
+		//    -- Try this before naked pairs, as naked pairs is a sub-set of this!
         // 		https://www.learn-sudoku.com/hidden-pairs.html
-        //  Also, can extend to hidden triplets and quadruplets ...
+        //  	Also, can extend to hidden triplets and quadruplets ...
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying a Naked/Hidden Pairs Search\n");
 		num_eliminations = hidden_sets_search(candidates, 2);
 		num_times_hidden_pairs += num_eliminations;
-
 		if (num_eliminations > 0) {
-			continue;
+			continue; // If hidden sets did something, give previous techniques another chance
 		}
+		// TODO: Try with larger set size
 
-        // TODO: More advanced techniques like X-wing
+
+        // TODO??: More advanced techniques like X-wing
         //   https://www.learn-sudoku.com/advanced-techniques.html
 
-        // Finally, try Random Value search
+
+        // Finally, try a Brute Force technique
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
-				"    Trying randomized solution...\n");
-		// Final approach: Try to randomize the cells with fewest options to see if that gives a valid solution
+				"    Trying randomized solution for a cell...\n");
+		// TODO: Make this more systematic than random (like step through candidates instead)
 		num_cells_found = randomized_value_board_search(board, candidates);
 		num_empty_cells -= num_cells_found;
 		num_times_random += num_cells_found;
