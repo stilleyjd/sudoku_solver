@@ -10,47 +10,102 @@
 #include "read_and_display.h"
 
 
-// #define FILENAME "P1.txt" // For initial development of simple solver (Naked Singles)
-#define FILENAME "P2.txt" // Uses naked singles, hidden singles, locked candidates, but still needs more advanced techniques to solve
-// #define FILENAME "P3.txt" // Solved with only Naked singles and hidden singles
-// #define FILENAME "P4.txt" // Solved with only Naked singles and hidden singles
-// #define FILENAME "P16x16-1.txt" // TODO: Try this to see if different size can be solved
-//    -- Also need to change globals... Should those be defined here instead??
-
-
-// #define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
+// NOTE! These are now defined in board_globals.h
+// #define FILENAME
+// #define PATHNAME
 
 #ifndef PATHNAME
 #include <windows.h>
 #endif
 
+void print_line() {
+    printf(" ");
+    for (int i = 0; i < LEN; i++) {
+        printf("----");
+    }
+    printf("\n");
+}
+
+void print_separators() {
+    printf("|");
+    for (int i = 0; i < LEN; i++) {
+        if (i % NUM == NUM-1) {
+            printf("   |");
+        }
+        else {
+            printf("    ");
+        }
+    }
+    printf("\n");
+}
+
 void display_board(int board[LEN][LEN]) {
+
     printf("\nBoard State: \n");
-    printf(" -----------------------------------\n");  // Top box line
+    print_line();  // Top box line
 
     for (int row = 0; row < LEN; row++) {
         printf("| "); // Print the left box line
         for (int col = 0; col < LEN; col++) {
             if (board[row][col] == 0) {
-                printf("-");
+                printf("- ");
             }
             else {
-                printf("%d", board[row][col]);
+                printf("%2d", board[row][col]);
             }
             // Pad with line (if section end) or spaces 
             if (col % NUM == NUM - 1) {
-                printf(" | ");
+                printf("| ");
             }
             else {
-                printf("   ");
+                printf("  ");
             }
         }
         printf("\n"); // Start a new row
         if (row % NUM == NUM - 1) {
-            printf(" -----------------------------------\n");  // Bottom section line
+            print_line();  // Bottom section line
         }
         else {
-            printf("|           |           |           |\n");  // If empty row, just print separators
+            print_separators();
+            // printf("|           |           |           |\n");  // If empty row, just print separators
+        }
+    }
+}
+
+void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+    printf("\nCandidate State: \n");
+    printf(" -----------------------------------------------------------------------------------------\n");  // Top box line
+
+    for (int row = 0; row < LEN; row++) {
+        printf("| "); // Print the left box line
+        for (int col = 0; col < LEN; col++) {
+            if (board[row][col] == 0) {
+                for (int ind = 0; ind < LEN; ind++) {
+                    if (candidates[row][col][ind] == 1) {
+                        printf("%d", ind + 1);
+                    }
+                    else {
+                        printf("-");
+                    }
+                }
+            }
+            else {
+                printf("    %d    ", board[row][col]);
+            }
+            // Pad with line (if section end) or spaces
+            if (col % NUM == NUM - 1) {
+                printf("|");
+            }
+            else {
+                printf(" ");
+            }
+        }
+        printf("\n"); // Start a new row
+        if (row % NUM == NUM - 1) {
+            printf(" -----------------------------------------------------------------------------------------\n");  // Bottom section line
+        }
+        else {
+            printf("|                              |                             |                             |\n");  // If empty row, just print separators
         }
     }
 }
@@ -93,13 +148,14 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     */
 
     char item;
-    char file_name[10];
+    char file_name[20];
     char path_name[FILENAME_MAX];
     char buff[FILENAME_MAX];
     int attempts = 0;
     int row = 0;
     int col = 0;
     int val;
+    int val2;
     int num_empty_cells = 0;
 
     FILE* fp;
@@ -168,7 +224,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         // Check if EOL "\n"
         else if (item == '\n') {
             if (col == LEN) {
-                // If end of line found after 9 columns, reset columns and incremnt the row
+                // If end of line found after LEN (9) columns, reset columns and incremnt the row
                 col = 0;
                 row++;
             }
@@ -186,18 +242,33 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
             else {
                 // Otherwise, convert to int
                 val = item - '0';
+
+                // For boards with LEN > 9, check if next value is int (a double-digit number)
+                if (LEN > 9) {
+                    item = fgetc(fp);
+
+                    val2 = item - '0';
+                    if (val2 >= 0 && val2 < 9) {
+                        printf("%c", item);
+                        val = val * 10 + val2;
+                    }
+                    else { // If not, then move the fp back one char and move on...
+                        fseek(fp, -1L, SEEK_CUR);
+                    }
+                }
             }
             // Check for errors
             if (row >= LEN || col >= LEN) {
                 printf("\nBoard has too many rows or columns! rows: %d, columns: %d!\n", row + 1, col + 1);
                 exit(EXIT_FAILURE);
             }
-            if (val < 0 || val > 9) {
+            if (val < 0 || val > LEN) {
                 printf("\nInvalid value found: %d!\n", val);
                 exit(EXIT_FAILURE);
             }
 
             board[row][col] = val;
+            printf("'%d'", val);
             col++;
         }
 
@@ -227,41 +298,4 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         }
     }
     return num_empty_cells;
-}
-
-void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
-    printf("\nCandidate State: \n");
-    printf(" -----------------------------------------------------------------------------------------\n");  // Top box line
-
-    for (int row = 0; row < LEN; row++) {
-        printf("| "); // Print the left box line
-        for (int col = 0; col < LEN; col++) {
-            if (board[row][col] == 0) {
-            	for (int ind = 0; ind < LEN; ind++) {
-            		if (candidates[row][col][ind] == 1) {
-            			printf("%d", ind+1);
-            		} else {
-            			printf("-");
-            		}
-            	}
-            }
-            else {
-                printf("    %d    ", board[row][col]);
-            }
-            // Pad with line (if section end) or spaces
-            if (col % NUM == NUM - 1) {
-                printf("|");
-            }
-            else {
-                printf(" ");
-            }
-        }
-        printf("\n"); // Start a new row
-        if (row % NUM == NUM - 1) {
-        	printf(" -----------------------------------------------------------------------------------------\n");  // Bottom section line
-        }
-        else {
-            printf("|                              |                             |                             |\n");  // If empty row, just print separators
-        }
-    }
 }

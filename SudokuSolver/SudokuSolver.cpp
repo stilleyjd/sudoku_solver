@@ -75,7 +75,9 @@ int main()
     	if (round > 0) {
     		// Display the results from last round
     		// display_board(board);
-    		display_candidates(board, candidates);
+            if (LEN < 10) {
+                display_candidates(board, candidates);
+            }
     		printf("Previous number of cells completed: %d\n", LEN*LEN - num_empty_cells_prev);
     		printf("Round %d: number of cells completed: %d\n\n", round, LEN * LEN - num_empty_cells);
     	}
@@ -127,8 +129,10 @@ int main()
             continue;  // if hidden singles worked, go back to naked singles
 		}
 
-        // If made it this far, then display candidate values for next algorithms
-        display_candidates(board, candidates);
+        // If made it this far, then display candidate values for next algorithms (and if puzzel is not too big...)
+        if (LEN < 10) {
+            display_candidates(board, candidates);
+        }
 
         // Locked Candidate
         // TODO: Quit once one elimination has been made??
