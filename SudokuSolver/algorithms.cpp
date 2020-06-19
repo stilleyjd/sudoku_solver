@@ -234,6 +234,8 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     return num_cells_completed;
 }
 
+
+
 // *******************************************************************************************
 // The following methods are used to remove candidates (but do not directly determine board values)
 
@@ -254,6 +256,7 @@ int remove_candidate(int candidates[LEN][LEN][LEN], int ind,
 
 	return num_removed;
 }
+
 
 int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	/*
@@ -467,6 +470,7 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 	return num_times_used;
 }
 
+
 // int naked_pairs_search(int candidates[LEN][LEN][LEN]) {
 // 	/* Naked Pairs:
 // 	 * This method of elimination pertains to the situation in which two numbers
@@ -480,6 +484,7 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 // 	 */
 //
 // }
+
 
 int hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size) {
 	/*
@@ -497,6 +502,14 @@ int hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size) {
 	int num_times_used = 0;
 
 	// A: Search in rows
+
+    // 1st, find values that are candidates in multiple cells
+
+    // 2nd, see if any of candidates are a hidden set (these values appear in set_size cells?)
+
+    // 3rd, if so, remove these as candidates in other cells in the same house. 
+
+
 
 	// B: Search in columns
 

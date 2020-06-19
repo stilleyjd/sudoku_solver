@@ -148,9 +148,9 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     */
 
     char item;
-    char file_name[20];
+    char file_name[25];
+    char dir_name[FILENAME_MAX - sizeof(file_name)];
     char path_name[FILENAME_MAX];
-    char buff[FILENAME_MAX];
     int attempts = 0;
     int row = 0;
     int col = 0;
@@ -165,14 +165,14 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     //    http://www.cplusplus.com/forum/windows/187372/ 
 
 	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
-    GetCurrentDirectoryA(FILENAME_MAX, buff);
+    GetCurrentDirectoryA(FILENAME_MAX - sizeof(file_name), dir_name);
     // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
-    correct_path_name(buff);  // TODO: Figure this out later...
-    printf("Corrected file dir: '%s'\n", buff);
+    correct_path_name(dir_name);  // TODO: Figure this out later...
+    printf("Corrected file dir: '%s'\n", dir_name);
 	#else
     // Workaround...
-    strcpy(buff, PATHNAME);
-    printf("Current working dir: '%s'\n", buff);
+    strcpy(dir_name, PATHNAME);
+    printf("Current working dir: '%s'\n", dir_name;
 	#endif // !PATHNAME
 
     do {
@@ -183,7 +183,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         strcpy(file_name, FILENAME);  // For development
         #endif // !FILENAME
 
-        snprintf(path_name, sizeof(path_name), "%s\\puzzles\\%s", buff, file_name);  // build file path
+        snprintf(path_name, sizeof(path_name), "%s\\puzzles\\%s", dir_name, file_name);  // build file path
         fp = fopen(path_name, "r");
 
         attempts++;
