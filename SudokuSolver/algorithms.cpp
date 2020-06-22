@@ -471,44 +471,72 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 }
 
 
-// int naked_pairs_search(int candidates[LEN][LEN][LEN]) {
-// 	/* Naked Pairs:
-// 	 * This method of elimination pertains to the situation in which two numbers
-// 	 *   are candidates in exactly two cells of a given group. Consequently, those two numbers
-// 	 *   are eliminated as candidates in all other cells within the group (Davis, 2007).
-// 	 * see: http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
-// 	 *   and https://www.learn-sudoku.com/naked-pairs.html
-// 	 *
-// 	 * This function uses the naked pairs technique to remove candidates from some cells
-// 	 * return: how many times the naked pairs technique found values to remove
-// 	 */
-//
-// }
-
-
-int hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size) {
+int naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size) {
 	/*
-	 * A Hidden Pair is basically just a “buried” Naked Pair. (so try this first?)
+	 * Naked Pairs:
+ 	 *   This method of elimination pertains to the situation in which two numbers
+ 	 *   are candidates in exactly two cells of a given group. Consequently, those two numbers
+ 	 *   are eliminated as candidates in all other cells within the group (Davis, 2007).
+ 	 * see: http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
+ 	 *   and https://www.learn-sudoku.com/naked-pairs.html
+ 	 *
+	 * Hidden Pair:
 	 *   It occurs when two pencil marks appear in exactly two cells within the same house (row, column, or block).
 	 *   However, the pair is not "Naked" - it is buried (or hidden) among other pencil marks
 	 * source: https://www.learn-sudoku.com/hidden-pairs.html
 	 *
-	 * This function uses the hidden pairs technique to remove candidates from some cells
-	 * set_size: the size of hidden sets to look for. 2 = hidden pairs, 3 = hidden triplets, etc.
-	 * return: how many times the hidden sets technique found values to remove
+	 * This function uses the naked and hidden sets techniques to remove candidates from some cells
+	 * set_size: the size of hidden sets to look for. 2 = pairs, 3 = triplets, etc.
+	 * return: how many times the naked and hidden sets techniques found values to remove
 	 *
 	 */
 
 	int num_times_used = 0;
+	int row, col, box;
+	int row_start, row_end, col_start, col_end;
+	int i, r, c;
+	int sum;
+	int values[LEN] = { 0 };
+	int n;
 
 	// A: Search in rows
+	for (row = 0; row < LEN; row++) {
+		row_start = row;
+		row_end = row + 1;
+		col_start = 0;
+		col_end = LEN;
 
-    // 1st, find values that are candidates in multiple cells
+		// Find values that are candidates in multiple cells, and put them in an array
+		values[LEN] = { 0 };
+		n = 0;
+		for (i = 0; i < LEN; i++) {
+			sum = 0;
+			for (r = row_start; r < row_end; r++) {
+				for (c = col_start; c < col_end; c++) {
+					if (candidates[r][c][i] == 1) {
+						sum++;
+					}
+				} // col
+			} // row
+			if (sum >= 2) {
+				values[n] = i;
+			}
+		}
 
-    // 2nd, see if any of candidates are a hidden set (these values appear in set_size cells?)
+		// 1st, Naked Sets (where set_size number of values are the only ones in set_size number of cells)
+		//  Ex: naked pair: in a row, there are 2 cells with only 5 & 9. All other 5's and 9's can be eliminated in that row.
+		//  http://hodoku.sourceforge.net/en/tech_naked.php
 
-    // 3rd, if so, remove these as candidates in other cells in the same house. 
+		// If found, eliminate the values in the set from other cells in the same house.
 
+
+	    // 2nd, Hidden Sets (where set_size number of values only exist in set_size cells)
+		//  Ex: hidden pair: in a col, there are only 2 cells with 4 & 8. All other candidates in those 2 cells can be removed.
+		//  http://hodoku.sourceforge.net/en/tech_hidden.php
+
+	    // If so, remove these as candidates in other cells in the same house.
+
+	}
 
 
 	// B: Search in columns

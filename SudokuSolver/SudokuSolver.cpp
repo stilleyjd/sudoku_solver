@@ -158,7 +158,7 @@ int main()
         //  	Also, can extend to hidden triplets and quadruplets ...
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying a Naked/Hidden Pairs Search\n");
-		num_eliminations = hidden_sets_search(candidates, 2);
+		num_eliminations = naked_hidden_sets_search(candidates, 2);
 		board_stats.num_times_hidden_pairs += num_eliminations;
 		if (num_eliminations > 0) {
 			continue; // If hidden sets did something, give previous techniques another chance
