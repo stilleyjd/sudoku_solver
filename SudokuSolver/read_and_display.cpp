@@ -23,14 +23,17 @@ void print_line() {
     for (int i = 0; i < LEN; i++) {
         printf("----");
     }
+    for (int i = 0; i < NUM-1; i++) {
+        printf("-");
+    }
     printf("\n");
 }
 
 void print_separators() {
-    printf("|");
+    printf("| ");
     for (int i = 0; i < LEN; i++) {
         if (i % NUM == NUM-1) {
-            printf("   |");
+            printf("   | ");
         }
         else {
             printf("    ");
@@ -48,26 +51,27 @@ void display_board(int board[LEN][LEN]) {
         printf("| "); // Print the left box line
         for (int col = 0; col < LEN; col++) {
             if (board[row][col] == 0) {
-                printf("- ");
+                printf(" - ");
             }
             else {
-                printf("%2d", board[row][col]);
+                printf("%2d ", board[row][col]);
             }
             // Pad with line (if section end) or spaces 
             if (col % NUM == NUM - 1) {
                 printf("| ");
             }
             else {
-                printf("  ");
+                printf(" ");
             }
         }
         printf("\n"); // Start a new row
+
+        // Add line (if section end) or spaces and separators
         if (row % NUM == NUM - 1) {
             print_line();  // Bottom section line
         }
         else {
             print_separators();
-            // printf("|           |           |           |\n");  // If empty row, just print separators
         }
     }
 }
@@ -212,8 +216,8 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         // Check if commented line
         if (item == '/') {
             while (item != '\n' && item != EOF) {
-                printf("%c", item);
                 item = fgetc(fp);
+                printf("%c", item);
             }
         }
         // Check if space 
@@ -268,7 +272,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
             }
 
             board[row][col] = val;
-            printf("'%d'", val);
+            // printf("'%d'", val);
             col++;
         }
 

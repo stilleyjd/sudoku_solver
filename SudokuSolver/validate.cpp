@@ -31,7 +31,7 @@ void check_area(int board[LEN][LEN], int row_start, int row_end, int col_start, 
 void check_for_double_values(int board[LEN][LEN], int double_coords[]) {
     // Checks the board to make sure there is only one instance of each number in each row, col, and box
     // If there is an instance of multiple values, sets values to row and col where occurance found
-    int r, c;
+    int r, c, b;
 
     printf("Checking the board for invalid values...\n");
 
@@ -52,10 +52,12 @@ void check_for_double_values(int board[LEN][LEN], int double_coords[]) {
     }
 
     // 3rd, check all NxN boxes
-    printf("\nChecking boxes: ");
+    printf("\nChecking box: ");
+    b = 0;
     for (r = 0; r < LEN - 2; r = r + NUM) {
         for (c = 0; c < LEN - 2; c = c + NUM) {
-            printf("%d-%dx%d-%d, ", r + 1, r + NUM, c + 1, c + NUM);
+        	b++;
+            printf("%d, ", b);  // %d-%dx%d-%d, ", r + 1, r + NUM, c + 1, c + NUM);
             check_area(board, r, r + NUM, c, c + NUM, double_coords);
             if (double_coords[0] + double_coords[1] > -1) { return; }
         }

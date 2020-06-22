@@ -7,9 +7,9 @@
 // #define FILENAME "P3.txt" // Easy: Solved with only Naked singles and hidden singles
 // #define FILENAME "P4.txt" // Easy: Solved with only Naked singles and hidden singles
 
-// #define NUM 4
-// #define LEN 16
-// #define FILENAME "P16x16-1.txt" // Medium: Solved with naked & hidden singels and locked candidates
+//#define NUM 4
+//#define LEN 16
+//#define FILENAME "P16x16-1.txt" // Medium: Solved with naked & hidden singles and locked candidates
 
 
 // #define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
