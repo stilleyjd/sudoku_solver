@@ -2,10 +2,20 @@
 
 #define NUM 3
 #define LEN 9
+// Solved Deterministically
 // #define FILENAME "P1.txt" // Very Easy: solved with only naked singles
-#define FILENAME "P2.txt" // Uses naked singles, hidden singles, locked candidates, but still needs more advanced techniques to solve
 // #define FILENAME "P3.txt" // Easy: Solved with only Naked singles and hidden singles
 // #define FILENAME "P4.txt" // Easy: Solved with only Naked singles and hidden singles
+// #define FILENAME "P6.txt" // Easy: Solved with only Naked singles and hidden singles
+// #define FILENAME "P2.txt" // Hard: solved with naked singles, hidden singles, locked candidates, and naked pairs
+
+// Good candidates for hidden pairs, triplets testing...
+#define FILENAME "P7.txt" // Used 2 random values //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked pairs
+// #define FILENAME "P8.txt" // Used 1 random value //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked pairs
+
+// Maybe finds a bug?? Cannot solve, even with random numbers...
+// #define FILENAME "P5.txt" // Very hard+: not solved with naked singles, hidden singles, locked candidates, and naked pairs
+
 
 //#define NUM 4
 //#define LEN 16

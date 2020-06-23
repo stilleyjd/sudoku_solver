@@ -1,0 +1,12 @@
+- - - - 8 4 - 1 -
+- 8 - - 5 - 9 - - 
+1 4 - - - - 2 8 5 
+4 - - - - 3 - 6 - 
+- - 6 1 - - - - 9 
+3 - 9 8 - - - - 4 
+- - - - - - 4 - 1 
+- - 3 4 - - 7 - - 
+- 1 - - 6 2 3 - - 
+
+// Hard difficulty Sudoku board used for testing (19 givens) 
+// From: https://www.researchgate.net/figure/Hard-difficulty-Sudoku-board-used-for-testing-19-givens-17_fig8_256169416

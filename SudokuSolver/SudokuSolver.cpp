@@ -3,10 +3,10 @@ Jordan D. Stilley
 Malmö, Sweden
 April-June 2020
 
-Note: most of techniques here come from:
+Note: some of techniques here come from:
     http://www.math.kent.edu/~malexand/Latex/Examples/Article%20Example/YSU_Sudoku.pdf
  - The Naked Single was created by the developer before reading this article, but then renamed to match
- - The randomized search was also independently created by the developer.
+ - The brute force (randomized value) search was also independently created by the developer.
 */
 
 #include <iostream>
@@ -24,6 +24,7 @@ struct BoardStats {
     int num_times_hidden_single = 0;
     int num_times_locked_candidate = 0;
     int num_times_hidden_pairs = 0;
+    int num_times_hidden_triplets = 0;
     int num_times_random = 0;
 };
 
@@ -161,10 +162,19 @@ int main()
 		num_eliminations = naked_hidden_sets_search(candidates, 2);
 		board_stats.num_times_hidden_pairs += num_eliminations;
 		if (num_eliminations > 0) {
-			continue; // If hidden sets did something, give previous techniques another chance
+			// break;
+			continue; // If naked / hidden pairs did something, give previous techniques another chance
 		}
-		// TODO: Try with larger set size
 
+		// TODO: Try with larger set size
+		printf("\nNo candidates could be eliminated with previous techniques.\n"
+				"    Trying a Naked/Hidden Triplets Search\n");
+		num_eliminations = naked_hidden_sets_search(candidates, 3);
+		board_stats.num_times_hidden_triplets += num_eliminations;
+		if (num_eliminations > 0) {
+			// break;
+			continue; // If naked / hidden triplets did something, give previous techniques another chance
+		}
 
         // TODO??: More advanced techniques like X-wing
         //   https://www.learn-sudoku.com/advanced-techniques.html
@@ -196,6 +206,7 @@ int main()
     printf("  Hidden Singles: %d\n", board_stats.num_times_hidden_single);
     printf("  Locked Candidate:  %d\n", board_stats.num_times_locked_candidate);
     printf("  Naked / Hidden Pairs: %d\n", board_stats.num_times_hidden_pairs);
+    printf("  Naked / Hidden Triplets: %d\n", board_stats.num_times_hidden_triplets);
     printf("  Random Choice:  %d\n", board_stats.num_times_random);
 
     if (board_stats.num_empty_cells == 0) {
