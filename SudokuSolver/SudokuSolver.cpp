@@ -23,7 +23,9 @@ struct BoardStats {
     int num_times_naked_single = 0;
     int num_times_hidden_single = 0;
     int num_times_locked_candidate = 0;
+    int num_times_naked_pairs = 0;
     int num_times_hidden_pairs = 0;
+    int num_times_naked_triplets = 0;
     int num_times_hidden_triplets = 0;
     int num_times_random = 0;
 };
@@ -41,6 +43,10 @@ int main()
     int num_eliminations = 0;
     int num_fails = 0;
     int double_values[2] = { -1, -1 };
+    int max_retries = 50;
+
+    int num_naked = 0;
+    int num_hidden = 0;
 
     // Copy of initial values in case of failure (the last deterministic state of the board)
     // TODO: Get rid of these if possible!
@@ -109,7 +115,7 @@ int main()
                 printf("Failed without using random values, only deterministic means!!!.\n");
                 printf("    Something went really wrong! You need to fix your code!\n");
                 break;
-            } else if (num_fails > 20) {
+            } else if (num_fails > max_retries) {
                 printf("Failed too many times. Giving up...\n");
                 break;
             }
@@ -159,9 +165,13 @@ int main()
         //  	Also, can extend to hidden triplets and quadruplets ...
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying a Naked/Hidden Pairs Search\n");
-		num_eliminations = naked_hidden_sets_search(candidates, 2);
-		board_stats.num_times_hidden_pairs += num_eliminations;
-		if (num_eliminations > 0) {
+
+		num_naked = 0;
+		num_hidden = 0;
+		naked_hidden_sets_search(candidates, 2, &num_naked, &num_hidden);
+		board_stats.num_times_naked_pairs += num_naked;
+		board_stats.num_times_hidden_pairs += num_hidden;
+		if (num_naked + num_hidden > 0) {
 			// break;
 			continue; // If naked / hidden pairs did something, give previous techniques another chance
 		}
@@ -169,9 +179,10 @@ int main()
 		// TODO: Try with larger set size
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying a Naked/Hidden Triplets Search\n");
-		num_eliminations = naked_hidden_sets_search(candidates, 3);
-		board_stats.num_times_hidden_triplets += num_eliminations;
-		if (num_eliminations > 0) {
+		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
+		board_stats.num_times_naked_triplets += num_naked;
+		board_stats.num_times_hidden_triplets += num_hidden;
+		if (num_naked + num_hidden > 0) {
 			// break;
 			continue; // If naked / hidden triplets did something, give previous techniques another chance
 		}
@@ -205,27 +216,38 @@ int main()
     printf("  Naked Singles:  %d\n", board_stats.num_times_naked_single);
     printf("  Hidden Singles: %d\n", board_stats.num_times_hidden_single);
     printf("  Locked Candidate:  %d\n", board_stats.num_times_locked_candidate);
-    printf("  Naked / Hidden Pairs: %d\n", board_stats.num_times_hidden_pairs);
-    printf("  Naked / Hidden Triplets: %d\n", board_stats.num_times_hidden_triplets);
+    printf("  Naked Pairs: %d\n", board_stats.num_times_naked_pairs);
+    printf("  Hidden Pairs: %d\n", board_stats.num_times_hidden_pairs);
+    printf("  Naked Triplets: %d\n", board_stats.num_times_naked_triplets);
+    printf("  Hidden Triplets: %d\n", board_stats.num_times_hidden_triplets);
     printf("  Random Choice:  %d\n", board_stats.num_times_random);
 
+	printf("\nTook %d rounds\n", round);
+	if (num_fails == 0) {
+		printf("  Completed with no retries \n\n");
+	}
+	else if (num_fails == 1) {
+		printf("  Had 1 retry \n\n");
+	}
+	else {
+		printf("  Had %d retries \n\n", num_fails);
+	}
+
     if (board_stats.num_empty_cells == 0) {
-        printf("\nFinished in %d rounds\n", round);
-        printf("\n  Had %d failures\n\n", num_fails);
+		// Check to make sure that each row, col, and box only has 1 - 9 once
+		int double_values[2] = { -1, -1 };
+		check_for_double_values(board, double_values);
 
-        // Check to make sure that each row, col, and box only has 1 - 9 once
-        int double_values[2] = { -1, -1 };
-        check_for_double_values(board, double_values);
 
-        if (double_values[0] == -1) {
-            printf("\nThe solution is valid. Success!!\n");
-            exit(EXIT_SUCCESS);
-        }
-        else {
-            printf("\nThe solution had an invalid result at %d, %d!!!\n", double_values[0], double_values[1]);
-            exit(EXIT_FAILURE);
-        }
-    }
+		if (double_values[0] == -1) {
+			printf("\nThe solution is valid. Success!!\n");
+			exit(EXIT_SUCCESS);
+		}
+		else {
+			printf("\nThe solution had an invalid result at %d, %d!!!\n", double_values[0], double_values[1]);
+			exit(EXIT_FAILURE);
+		}
+	}
     else {
         printf("\n\nFAILED!\n");
         exit(EXIT_FAILURE);

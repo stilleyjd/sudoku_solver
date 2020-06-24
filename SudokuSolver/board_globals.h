@@ -8,13 +8,11 @@
 // #define FILENAME "P4.txt" // Easy: Solved with only Naked singles and hidden singles
 // #define FILENAME "P6.txt" // Easy: Solved with only Naked singles and hidden singles
 // #define FILENAME "P2.txt" // Hard: solved with naked singles, hidden singles, locked candidates, and naked pairs
+// #define FILENAME "P8.txt" // Hard: Solved with naked singles, hidden singles, locked candidates, and naked & hidden pairs
 
-// Good candidates for hidden pairs, triplets testing...
-#define FILENAME "P7.txt" // Used 2 random values //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked pairs
-// #define FILENAME "P8.txt" // Used 1 random value //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked pairs
-
-// Maybe finds a bug?? Cannot solve, even with random numbers...
-// #define FILENAME "P5.txt" // Very hard+: not solved with naked singles, hidden singles, locked candidates, and naked pairs
+// Good candidates for naked / hidden triplets testing...
+// #define FILENAME "P7.txt" // Still uses 1 random value //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked & hidden pairs
+#define FILENAME "P5.txt" // Still uses 1 random value //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked & hidden pairs
 
 
 //#define NUM 4
