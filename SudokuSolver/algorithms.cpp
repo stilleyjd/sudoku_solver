@@ -509,7 +509,7 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	int cells_in_hidden_set[set_size][LEN] = { 0 };
 
 	int a, b, d;
-	int m, n, k;
+	int m, n, k, l;
 	int skip;
 
 	if ((row_end - row_start) * (col_end - col_start) > LEN) {
@@ -637,7 +637,8 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 			printf("; Found: ");
 			for (m = 0; m < set_size; m++) {
 				printf(" %d,", combos[m][n] + 1);
-				// combos[m][n] = combos_init[m][n];
+//				l = combos_init[m][n];
+//				combos[m][n] = l;
 			}
 			printf("\n");
 		}
@@ -690,7 +691,7 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		//    Ex: naked pair: in a row, there are 2 cells with only 5 & 9. All other 5's and 9's can be eliminated in that row.
 		//    http://hodoku.sourceforge.net/en/tech_naked.php
 		if (cnt_naked == set_size) { // If set_size number of naked cells found
-			printf("Running Naked set elimination");
+			printf("Running Naked set elimination\n");
 			// Then eliminate the values in the set from other cells in the same house.
 			for (r = row_start; r < row_end; r++) {
 				for (c = col_start; c < col_end; c++) {
@@ -732,7 +733,7 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 			//    Ex: hidden pair: in a col, there are only 2 cells with 4 & 8. All other candidates in those 2 cells can be removed.
 			//    http://hodoku.sourceforge.net/en/tech_hidden.php
 		if (cnt_hidden == set_size) { // If set_size number of hidden cells found
-			printf("Running Hidden set elimination");
+			printf("Running Hidden set elimination\n");
 
 			// Then eliminate any other candidates values from these cells
 			for (k = 0; k < cnt_hidden; k++) {
