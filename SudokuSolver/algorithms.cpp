@@ -472,7 +472,22 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 }
 
 
-int naked_and_hidden_pairs_search(int candidates[LEN][LEN][LEN],
+int factorial(int n) {
+	int result = 1;
+	int i;
+
+	if (n < 2) {
+		return result;
+	}
+
+	for (i = 1; i <= n; i++) {
+		result = result * i;
+	}
+	return result;
+}
+
+
+int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		int row_start, int row_end, int col_start, int col_end) {
 	/*
 	 * Performs the naked set and hidden pairs search for the house defined by
@@ -483,22 +498,26 @@ int naked_and_hidden_pairs_search(int candidates[LEN][LEN][LEN],
 	 * 		Otherwise, returns 0.
 	 */
 
-	int set_size = 2;
-
 	int num_removed = 0;
 	int i, r, c;
-	int num, sum;
-	int cnt_naked, cnt_hidden;
+	int num = 0, sum = 0;
 	int values[LEN] = { 0 };
-	int cells_in_naked_set[2][LEN] = { 0 };;
-	int cells_in_hidden_set[2][LEN] = { 0 };
-	int n;
-	int a, b;
-	int skip = 0;
+	int num_combos = 1;
 
-	// Initial step: Find values that are candidates in multiple cells, and put them in an array to check
-	memset(values, 0, sizeof(values));
-	num = 0;
+	int cnt_naked, cnt_hidden;
+	int cells_in_naked_set[set_size][LEN] = { 0 };
+	int cells_in_hidden_set[set_size][LEN] = { 0 };
+
+	int a, b, d;
+	int m, n, k;
+	int skip;
+
+	if ((row_end - row_start) * (col_end - col_start) > LEN) {
+		printf("Invalid house size!!");
+		return -1;
+	}
+
+	// Initial step: Find values that are candidates in multiple cells, and put them in an array to look though next
 	for (i = 0; i < LEN; i++) {
 		sum = 0;
 		for (r = row_start; r < row_end; r++) {
@@ -515,125 +534,245 @@ int naked_and_hidden_pairs_search(int candidates[LEN][LEN][LEN],
 		}
 	}
 
-	// Move on if less than set_size values were found
+	// Quit if number of values is less than set_size
 	if (num < set_size) {
 		return 0;
 	}
 
 
-	// loop through all candidate value sets
-	for (a = 0; a < num-1; a++) {
-		for (b = a+1; b < num; b++) {
-			// printf("Checking candidates: A: %d, B: %d\n", values[a] + 1, values[b] + 1);
+    // Create an array of all possible combinations to loop though
+	// determine number of possible unique combinations with no repeats (Unordered Sampling without Replacement)
+	//		n!/(k!*(n-k)!),   where n = num, k = set_size
+	//    See: https://www.probabilitycourse.com/chapter2/2_1_3_unordered_without_replacement.php
+	if (num > set_size) {
+		num_combos = (int) factorial(num) / (factorial(set_size) * factorial(num - set_size));
+	}
+	printf("Values: ");
+	for (int n = 0; n < num; n++) {
+		printf("%d, ", values[n] + 1);
+	}
+	printf("Expected number of combinations: %d\n", num_combos);
 
-			// Part A: See if there are sets that meet the naked or hidden criteria.
-			memset(cells_in_naked_set, 0, sizeof(cells_in_naked_set));
-			cnt_naked = 0;
-			memset(cells_in_hidden_set, 0, sizeof(cells_in_hidden_set));
-			cnt_hidden = 0;
+	int combos[set_size][num_combos] = { 0 };
+	int combos_init[set_size][num_combos] = { 0 };
 
-			// Loop through all cells in house to check pair
-			for (r = row_start; r < row_end; r++) {
-				for (c = col_start; c < col_end; c++) {
-					// Check if values at a & b are candidates
-					if (candidates[r][c][values[a]] == 1 && candidates[r][c][values[b]] == 1) {
 
-						// If it has the 2 values, track as potential hidden set, but need to confirm
-						cells_in_hidden_set[0][cnt_hidden] = r;
-						cells_in_hidden_set[1][cnt_hidden] = c;
-						// printf("Potential hidden pair: Row: %d, Col: %d\n", r + 1, c + 1);
-						cnt_hidden++;
+	// TODO: could this be one loop/algorithm instead?
+	n = 0;
+	if (set_size == 2) {
+		for (a = 0; a < num-1; a++) {
+			for (b = a+1; b < num; b++) {
+				combos[0][n] = values[a];
+				combos[1][n] = values[b];
+				n++;
+			}
+		}
+	} else if (set_size == 3) {
+		for (a = 0; a < num-2; a++) {
+			for (b = a+1; b < num-1; b++) {
+				for (c = b+1; c < num; c++) {
+					combos[0][n] = values[a];
+					combos[1][n] = values[b];
+					combos[2][n] = values[c];
+					n++;
+				}
+			}
+		}
+	} else if (set_size == 4) {
+		for (a = 0; a < num-3; a++) {
+			for (b = a+1; b < num-2; b++) {
+				for (c = b+1; c < num-1; c++) {
+					for (d = c+1; d < num; d++) {
+						combos[0][n] = values[a];
+						combos[1][n] = values[b];
+						combos[2][n] = values[c];
+						combos[3][n] = values[d];
+						n++;
+					}
+				}
+			}
+		}  // TODO: Do higher set sizes?? Not very likely to be helpful...
+	} else {
+		printf("Invalid set_size !!!");
+		return -1;
+	}
 
-						// If only candidate values are the set testing, it's a potential naked set
-						if (sum_ints(LEN, candidates[r][c]) == set_size) { // If there are only set_size candidates
-							cells_in_naked_set[0][cnt_naked] = r;
-							cells_in_naked_set[1][cnt_naked] = c;
-							// printf("Potential naked pair: Row: %d, Col: %d\n", r + 1, c + 1);
-							cnt_naked++;
-						}
+	if (n != num_combos) {
+		printf("More or less combos found then expected! Found: %d, Expected %d\n Something went wrong!!!",
+				n, num_combos);
+		exit(EXIT_FAILURE);
+	}
 
-					} else if (candidates[r][c][values[a]] == 1 || candidates[r][c][values[b]] == 1) {
-						cnt_hidden = -2*LEN;  // If other cells have values, then cannot be a hidden set, so mess up counter
+//	// Debug Print...
+//	printf("Checking Combo set");
+//	for (n = 0; n < num_combos; n++) {
+////		if (set_size > 3) {
+//			printf(" %d:", n + 1);
+//			for (m = 0; m < set_size; m++) {
+//				printf(" %d,", combos[m][n] + 1);
+//			}
+//	}
+//	printf("\n");
+
+	memcpy(combos_init, combos, sizeof(combos_init));
+
+	// loop through all candidate combinations of values
+	printf("Checking Combo sets\n");
+	for (n = 0; n < num_combos; n++) {
+//		if (set_size > 3) {
+		skip = 1;
+		// printf(" %d:", n + 1);
+		for (m = 0; m < set_size; m++) {
+			printf(" %d,", combos[m][n] + 1);
+			if (combos_init[m][n] != combos[m][n]) {
+				skip = 0;
+			}
+		}
+		printf("\n");
+		if (skip == 0) {
+			printf("Error found in set %d. Expected: ", n + 1);
+			for (m = 0; m < set_size; m++) {
+				printf(" %d,", combos_init[m][n] + 1);
+			}
+			printf("; Found: ");
+			for (m = 0; m < set_size; m++) {
+				printf(" %d,", combos[m][n] + 1);
+				// combos[m][n] = combos_init[m][n];
+			}
+			printf("\n");
+		}
+
+
+		// Part A: See if there are sets that meet the naked or hidden criteria.
+		// memset(cells_in_naked_set, 0, sizeof(cells_in_naked_set));
+		cnt_naked = 0;
+		// memset(cells_in_hidden_set, 0, sizeof(cells_in_hidden_set));
+		cnt_hidden = 0;
+
+		// Loop through all cells in house to check if has the combo
+		for (r = row_start; r < row_end; r++) {
+			for (c = col_start; c < col_end; c++) {
+				// Check if values in combo[n] are candidates
+				sum = 0;
+				for (m = 0; m < set_size; m++) {
+					if (candidates[r][c][combos[m][n]] == 1) {
+						sum++;
+					}
+				}
+
+				if (sum >= 2) {
+					// Hidden: If it has at least 2 values, track as potential
+					cells_in_hidden_set[0][cnt_hidden] = r;
+					cells_in_hidden_set[1][cnt_hidden] = c;
+					// printf("Potential hidden pair: Row: %d, Col: %d\n", r + 1, c + 1);
+					cnt_hidden++;
+
+					// Naked: If only candidate values are in the set testing, it's a potential naked set
+					if (sum_ints(LEN, candidates[r][c]) == sum) {
+						cells_in_naked_set[0][cnt_naked] = r;
+						cells_in_naked_set[1][cnt_naked] = c;
+						// printf("Potential naked pair: Row: %d, Col: %d\n", r + 1, c + 1);
+						cnt_naked++;
 					}
 
+				} else if (sum == 1) { // Hidden
+					// If other cells have just one of the values in this combo, then it cannot be a hidden set
+					cnt_hidden += LEN;  // so mess up the counter to skip the hidden set part...
+				}
+
+			} // col
+		} // row
+
+
+		// Part B: If there are these sets, remove other candidate values based on set type
+
+		// 1st, Naked Sets (where set_size number of values are the only ones in set_size number of cells)
+		//    Ex: naked pair: in a row, there are 2 cells with only 5 & 9. All other 5's and 9's can be eliminated in that row.
+		//    http://hodoku.sourceforge.net/en/tech_naked.php
+		if (cnt_naked == set_size) { // If set_size number of naked cells found
+			printf("Running Naked set elimination");
+			// Then eliminate the values in the set from other cells in the same house.
+			for (r = row_start; r < row_end; r++) {
+				for (c = col_start; c < col_end; c++) {
+					// Skip cells it the naked set
+					skip = 0;
+					for (k = 0; k < cnt_naked; k++) {
+						if (cells_in_naked_set[0][k] == r && cells_in_naked_set[1][k] == c) {
+							skip = 1;
+							break;
+						}
+					}
+					if (skip == 1) { continue; }
+
+					for (m = 0; m < set_size; m++) {
+						if (candidates[r][c][combos[m][n]] == 1) {
+							candidates[r][c][combos[m][n]] = 0;
+							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", combos[m][n]+1, r+1, c+1);
+							num_removed++;
+						}
+					}
 				} // col
 			} // row
 
+		} else if (cnt_naked > set_size) {
+			printf("!! %d candidates found for a naked set of size %d !!!", cnt_naked, set_size);
+			exit(EXIT_FAILURE);
+		}
 
-			// Part B: If there are these sets, remove other candidate values based on set type
-
-			// 1st, Naked Sets (where set_size number of values are the only ones in set_size number of cells)
-			//    Ex: naked pair: in a row, there are 2 cells with only 5 & 9. All other 5's and 9's can be eliminated in that row.
-			//    http://hodoku.sourceforge.net/en/tech_naked.php
-			if (cnt_naked == set_size) { // If set_size number of naked cells found
-
-				// Then eliminate the values in the set from other cells in the same house.
-				for (r = row_start; r < row_end; r++) {
-					for (c = col_start; c < col_end; c++) {
-						// Skip cells it the set
-						skip = 0;
-						for (n = 0; n < cnt_naked; n++) {
-							if (cells_in_naked_set[0][n] == r && cells_in_naked_set[1][n] == c) {
-								skip = 1;
-							}
-						}
-						if (skip == 1) { continue; }
-
-						if (candidates[r][c][values[a]] == 1) {
-							candidates[r][c][values[a]] = 0;
-							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", values[a]+1, r+1, c+1);
-							num_removed++;
-						}
-						if (candidates[r][c][values[b]] == 1) {
-							candidates[r][c][values[b]] = 0;
-							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", values[b]+1, r+1, c+1);
-							num_removed++;
-						}
-					} // col
-				} // row
-			} else if (cnt_naked > set_size) {
-				printf("!! %d candidates found for a naked set of size %d !!!", cnt_naked, set_size);
-				exit(EXIT_FAILURE);
+		if (num_removed > 0) {
+			printf("Naked Set values were found: ");
+			for (m = 0; m < set_size-1; m++) {
+				printf("%d & ", combos[m][n] + 1);
 			}
+			printf("%d\n", combos[set_size-1][n] + 1);
+			return 1;
+		}
 
-			if (num_removed > 0) {
-				printf("Naked Pair values of %d & %d were found.\n", values[a]+1, values[b]+1);
-				return 1;
-			}
+		// 2nd, Hidden Sets (where set_size number of values only exist in set_size cells)
+			//    Ex: hidden pair: in a col, there are only 2 cells with 4 & 8. All other candidates in those 2 cells can be removed.
+			//    http://hodoku.sourceforge.net/en/tech_hidden.php
+		if (cnt_hidden == set_size) { // If set_size number of hidden cells found
+			printf("Running Hidden set elimination");
 
-			// 2nd, Hidden Sets (where set_size number of values only exist in set_size cells)
-				//    Ex: hidden pair: in a col, there are only 2 cells with 4 & 8. All other candidates in those 2 cells can be removed.
-				//    http://hodoku.sourceforge.net/en/tech_hidden.php
-			if (cnt_hidden == set_size) { // If set_size number of hidden cells found
-				// Then eliminate any other candidates values from these cells
-				for (n = 0; n < cnt_hidden; n++) {
-					for (i = 0; i < LEN; i++) {
-						if (i == values[a] || i == values[b]) {  // Skip the candidate values
-							continue;
+			// Then eliminate any other candidates values from these cells
+			for (k = 0; k < cnt_hidden; k++) {
+				for (i = 0; i < LEN; i++) {
+					// Skip values in the current combo
+					skip = 0;
+					for (m = 0; m < set_size; m++) {
+						if (i == combos[m][n]) {
+							skip = 1;
+							break;
 						}
+					}
+					if (skip == 1) { continue; }
 
-						r = cells_in_hidden_set[0][n];
-						c = cells_in_hidden_set[1][n];
-						if (candidates[r][c][i] == 1) {
-							candidates[r][c][i] = 0;
-							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
-							num_removed++;
-						}
-					} // col
-				} // row
+					// Otherwise, remove the value
+					r = cells_in_hidden_set[0][k];
+					c = cells_in_hidden_set[1][k];
+					if (candidates[r][c][i] == 1) {
+						candidates[r][c][i] = 0;
+						printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
+						num_removed++;
+					}
+				} // col
+			} // row
+		}
+
+		if (num_removed > 0) {
+			printf("Hidden Set values were found: ");
+			for (m = 0; m < set_size-1; m++) {
+				printf("%d & ", combos[m][n] + 1);
 			}
+			printf("%d\n", combos[set_size-1][n] + 1);
+			return 2;
+		}
+	}
 
-			if (num_removed > 0) {
-				printf("Hidden Pair values of %d & %d were found.\n", values[a]+1, values[b]+1);
-				return 2;
-			}
-
-		} // value b
-	} // value a
+	printf("\n");
 
 	return 0;
 }
-
 
 void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* num_naked, int* num_hidden) {
 	/*
@@ -663,22 +802,20 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 	*num_hidden = 0;
 
 	// Check that set size is one this function can handle
-	if (set_size != 2) {
+	if (set_size < 2 || set_size > 4) {
 		printf("** Invalid set_size: %d!! **", set_size);
 		return;
 	}
 
 	// A: Search in rows
 	for (house = 0; house < LEN; house++) {
-		if (set_size == 2) {
-			result = naked_and_hidden_pairs_search(candidates, house, house + 1, 0, LEN);
-			if (result == 1) {
-				*num_naked += 1;
-				printf("  These values were removed as candidates from other cells in row %d\n\n", house + 1);
-			} else if (result == 2) {
-				*num_hidden += 1;
-				printf("  All other candidates were removed from the cells with these values in row %d\n\n", house + 1);
-			}
+		result = naked_and_hidden_for_house(candidates, set_size, house, house + 1, 0, LEN);
+		if (result == 1) {
+			*num_naked += 1;
+			printf("  These values were removed as candidates from other cells in row %d\n\n", house + 1);
+		} else if (result == 2) {
+			*num_hidden += 1;
+			printf("  All other candidates were removed from the cells with these values in row %d\n\n", house + 1);
 		}
 
 		// if (result > 0) {
@@ -688,15 +825,13 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 
 	// B: Search in columns
 	for (house = 0; house < LEN; house++) {
-		if (set_size == 2) {
-			result = naked_and_hidden_pairs_search(candidates, 0, LEN, house, house + 1);
-			if (result == 1) {
-				*num_naked += 1;
-				printf("  These values were removed as candidates from other cells in column %d\n\n", house + 1);
-			} else if (result == 2) {
-				*num_hidden += 1;
-				printf("  All other candidates were removed from the cells with these values in column %d\n\n", house + 1);
-			}
+		result = naked_and_hidden_for_house(candidates, set_size, 0, LEN, house, house + 1);
+		if (result == 1) {
+			*num_naked += 1;
+			printf("  These values were removed as candidates from other cells in column %d\n\n", house + 1);
+		} else if (result == 2) {
+			*num_hidden += 1;
+			printf("  All other candidates were removed from the cells with these values in column %d\n\n", house + 1);
 		}
 
 		// if (result > 0) {
@@ -709,15 +844,13 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 		row_start = (int) (house / NUM) * NUM;
 		col_start = (int) (house % NUM) * NUM;
 
-		if (set_size == 2) {
-			result = naked_and_hidden_pairs_search(candidates, row_start, row_start+NUM, col_start, col_start+NUM);
-			if (result == 1) {
-				*num_naked += 1;
-				printf("  These values were removed as candidates from other cells in box %d\n\n", house + 1);
-			} else if (result == 2) {
-				*num_hidden += 1;
-				printf("  All other candidates were removed from the cells with these values in box %d\n\n", house + 1);
-			}
+		result = naked_and_hidden_for_house(candidates, set_size, row_start, row_start+NUM, col_start, col_start+NUM);
+		if (result == 1) {
+			*num_naked += 1;
+			printf("  These values were removed as candidates from other cells in box %d\n\n", house + 1);
+		} else if (result == 2) {
+			*num_hidden += 1;
+			printf("  All other candidates were removed from the cells with these values in box %d\n\n", house + 1);
 		}
 
 		// if (result > 0) {

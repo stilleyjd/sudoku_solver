@@ -176,16 +176,16 @@ int main()
 			continue; // If naked / hidden pairs did something, give previous techniques another chance
 		}
 
-		// TODO: Try with larger set size
-		printf("\nNo candidates could be eliminated with previous techniques.\n"
-				"    Trying a Naked/Hidden Triplets Search\n");
-		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
-		board_stats.num_times_naked_triplets += num_naked;
-		board_stats.num_times_hidden_triplets += num_hidden;
-		if (num_naked + num_hidden > 0) {
-			// break;
-			continue; // If naked / hidden triplets did something, give previous techniques another chance
-		}
+//		// TODO: Try with larger set size
+//		printf("\nNo candidates could be eliminated with previous techniques.\n"
+//				"    Trying a Naked/Hidden Triplets Search\n");
+//		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
+//		board_stats.num_times_naked_triplets += num_naked;
+//		board_stats.num_times_hidden_triplets += num_hidden;
+//		if (num_naked + num_hidden > 0) {
+//			// break;
+//			continue; // If naked / hidden triplets did something, give previous techniques another chance
+//		}
 
         // TODO??: More advanced techniques like X-wing
         //   https://www.learn-sudoku.com/advanced-techniques.html
