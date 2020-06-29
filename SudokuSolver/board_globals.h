@@ -3,16 +3,20 @@
 #define NUM 3
 #define LEN 9
 // Solved Deterministically
-// #define FILENAME "P1.txt" // Very Easy: solved with only naked singles
-// #define FILENAME "P3.txt" // Easy: Solved with only Naked singles and hidden singles
-// #define FILENAME "P4.txt" // Easy: Solved with only Naked singles and hidden singles
-// #define FILENAME "P6.txt" // Easy: Solved with only Naked singles and hidden singles
-// #define FILENAME "P2.txt" // Hard: solved with naked singles, hidden singles, locked candidates, and naked pairs
-// #define FILENAME "P8.txt" // Hard: Solved with naked singles, hidden singles, locked candidates, and naked & hidden pairs
+// #define FILENAME "P1.txt" // Very Easy: Only naked singles
+// #define FILENAME "P3.txt" // Easy: Naked & hidden singles
+// #define FILENAME "P4.txt" // Easy: Naked & hidden singles
+// #define FILENAME "P6.txt" // Easy: Naked & hidden singles
+// #define FILENAME "P9.txt" // Easy: Naked & hidden singles
+// #define FILENAME "P2.txt" // Hard: Naked & hidden singles, locked candidates, and naked pairs
+// #define FILENAME "P8.txt" // Hard: Naked & hidden singles, locked candidates, and naked & hidden pairs
+// #define FILENAME "P10.txt" // Hard: Naked & hidden singles, locked candidates, and naked triplets
 
-// Good candidates for naked / hidden triplets testing...
-// #define FILENAME "P7.txt" // Still uses 1 random value //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked & hidden pairs
-#define FILENAME "P5.txt" // Still uses 1 random value //  Very hard: not solved with naked singles, hidden singles, locked candidates, and naked & hidden pairs
+// Still need random number
+#define FILENAME "P7.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and naked & hidden pairs
+// #define FILENAME "P5.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and naked & hidden pairs / triples
+// #define FILENAME "P11.txt" // Very hard: 2 random + Naked & hidden singles, and naked & hidden pairs / triples / quads
+// #define FILENAME "P12.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and naked & hidden pairs / triples
 
 
 //#define NUM 4

@@ -189,8 +189,6 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
             if (board[row][col] == 0) {  // If cell is not yet solved
                 // Search the cell's groups (the row, column and box of the cell at location "row", "col")
                 //    to see if there is a candidate value that only this cell has
-
-               //  printf("Hidden Single search for results to: row %d, col %d\n", row+1, col+1);
                 result = 0;
                 
                 // Loop through all candidate values, checking if they're unique in their row, col, or box
@@ -340,10 +338,11 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 					num_removed += remove_candidate(candidates, i, spot_found, spot_found+1, col_start[box]+NUM, LEN);
 				}
 
-				if (num_removed > 0) {  // TODO: Exit if this is true??
+				if (num_removed > 0) {
 					printf("Locked Candidate value of %d was only found in row %d of box %d.\n", i+1, spot_found+1, box+1);
 					printf("  This candidate value was removed from other boxes in row %d\n", spot_found+1);
 					num_occurances++;
+					return num_occurances;
 				}
 			}
 
@@ -376,10 +375,11 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 					num_removed += remove_candidate(candidates, i, row_start[box]+NUM, LEN, spot_found, spot_found+1);
 				}
 
-				if (num_removed > 0) {  // TODO: Exit if this is true??
+				if (num_removed > 0) {
 					printf("Locked Candidate value of %d was only found in column %d of box %d\n", i+1, spot_found+1, box+1);
 					printf("  This candidate value was removed from other boxes in column %d\n", spot_found+1);
 					num_occurances++;
+					return num_occurances;
 				}
 			}
 
@@ -419,10 +419,11 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 					num_removed += remove_candidate(candidates, i, r+1, row_start[box]+NUM, col_start[box], col_start[box]+NUM);
 				}
 
-				if (num_removed > 0) {  // TODO: Exit if this is true??
+				if (num_removed > 0) {
 					printf("Locked Candidate value of %d was only found in box %d of row %d\n", i+1, box+1, r+1);
 					printf("  This candidate value was removed from other rows in box %d\n", box+1);
 					num_occurances++;
+					return num_occurances;
 				}
 			}
 		} // row
@@ -459,10 +460,11 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 					num_removed += remove_candidate(candidates, i, row_start[box], row_start[box]+NUM, c+1, col_start[box]+NUM);
 				}
 
-				if (num_removed > 0) {  // TODO: Exit if this is true??
+				if (num_removed > 0) {
 					printf("Locked Candidate value of %d was only found in box %d of col %d\n", i+1, box+1, c+1);
 					printf("  This candidate value was removed from other columns in box %d\n", box+1);
 					num_occurances++;
+					return num_occurances;
 				}
 			}
 		} // col
@@ -504,13 +506,6 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	int values[LEN] = { 0 };
 	int num_combos = 1;
 
-	int cnt_naked, cnt_hidden;
-	int cells_in_naked_set[set_size][LEN] = { 0 };
-	int cells_in_hidden_set[set_size][LEN] = { 0 };
-
-	int a, b, d;
-	int m, n, k, l;
-	int skip;
 
 	if ((row_end - row_start) * (col_end - col_start) > LEN) {
 		printf("Invalid house size!!");
@@ -530,7 +525,6 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		if (sum >= 2) {
 			values[num] = i;
 			num++;
-			// printf("Adding value: %d, ", i + 1);
 		}
 	}
 
@@ -547,15 +541,18 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	if (num > set_size) {
 		num_combos = (int) factorial(num) / (factorial(set_size) * factorial(num - set_size));
 	}
-	printf("Values: ");
-	for (int n = 0; n < num; n++) {
-		printf("%d, ", values[n] + 1);
-	}
-	printf("Expected number of combinations: %d\n", num_combos);
 
+	// Set up variables used by the rest of the function
+	int a, b, d, e;
+	int m, n;
 	int combos[set_size][num_combos] = { 0 };
-	int combos_init[set_size][num_combos] = { 0 };
 
+	int cnt_naked = 0;
+	int cnt_hidden = 0;
+	int is_hidden;
+	int skip;
+	int cells_in_naked_set[set_size][LEN] = { 0 };
+	int cells_in_hidden_set[set_size][LEN] = { 0 };
 
 	// TODO: could this be one loop/algorithm instead?
 	n = 0;
@@ -591,64 +588,42 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 					}
 				}
 			}
-		}  // TODO: Do higher set sizes?? Not very likely to be helpful...
+		}
+	} else if (set_size == 5) {
+		for (a = 0; a < num-4; a++) {
+			for (b = a+1; b < num-3; b++) {
+				for (c = b+1; c < num-2; c++) {
+					for (d = c+1; d < num-1; d++) {
+						for (e = d+1; e < num; e++) {
+							combos[0][n] = values[a];
+							combos[1][n] = values[b];
+							combos[2][n] = values[c];
+							combos[3][n] = values[d];
+							combos[4][n] = values[e];
+							n++;
+						}
+					}
+				}
+			}
+		}
 	} else {
-		printf("Invalid set_size !!!");
+		printf("Invalid set_size: %d !!!", set_size);
 		return -1;
 	}
 
 	if (n != num_combos) {
-		printf("More or less combos found then expected! Found: %d, Expected %d\n Something went wrong!!!",
+		printf("More or less combinations found then expected! Found: %d, Expected %d\n Something went wrong!!!",
 				n, num_combos);
 		exit(EXIT_FAILURE);
 	}
 
-//	// Debug Print...
-//	printf("Checking Combo set");
-//	for (n = 0; n < num_combos; n++) {
-////		if (set_size > 3) {
-//			printf(" %d:", n + 1);
-//			for (m = 0; m < set_size; m++) {
-//				printf(" %d,", combos[m][n] + 1);
-//			}
-//	}
-//	printf("\n");
-
-	memcpy(combos_init, combos, sizeof(combos_init));
-
 	// loop through all candidate combinations of values
-	printf("Checking Combo sets\n");
 	for (n = 0; n < num_combos; n++) {
-//		if (set_size > 3) {
-		skip = 1;
-		// printf(" %d:", n + 1);
-		for (m = 0; m < set_size; m++) {
-			printf(" %d,", combos[m][n] + 1);
-			if (combos_init[m][n] != combos[m][n]) {
-				skip = 0;
-			}
-		}
-		printf("\n");
-		if (skip == 0) {
-			printf("Error found in set %d. Expected: ", n + 1);
-			for (m = 0; m < set_size; m++) {
-				printf(" %d,", combos_init[m][n] + 1);
-			}
-			printf("; Found: ");
-			for (m = 0; m < set_size; m++) {
-				printf(" %d,", combos[m][n] + 1);
-//				l = combos_init[m][n];
-//				combos[m][n] = l;
-			}
-			printf("\n");
-		}
-
 
 		// Part A: See if there are sets that meet the naked or hidden criteria.
-		// memset(cells_in_naked_set, 0, sizeof(cells_in_naked_set));
 		cnt_naked = 0;
-		// memset(cells_in_hidden_set, 0, sizeof(cells_in_hidden_set));
 		cnt_hidden = 0;
+		is_hidden = 1;
 
 		// Loop through all cells in house to check if has the combo
 		for (r = row_start; r < row_end; r++) {
@@ -662,12 +637,6 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 				}
 
 				if (sum >= 2) {
-					// Hidden: If it has at least 2 values, track as potential
-					cells_in_hidden_set[0][cnt_hidden] = r;
-					cells_in_hidden_set[1][cnt_hidden] = c;
-					// printf("Potential hidden pair: Row: %d, Col: %d\n", r + 1, c + 1);
-					cnt_hidden++;
-
 					// Naked: If only candidate values are in the set testing, it's a potential naked set
 					if (sum_ints(LEN, candidates[r][c]) == sum) {
 						cells_in_naked_set[0][cnt_naked] = r;
@@ -676,9 +645,16 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 						cnt_naked++;
 					}
 
-				} else if (sum == 1) { // Hidden
-					// If other cells have just one of the values in this combo, then it cannot be a hidden set
-					cnt_hidden += LEN;  // so mess up the counter to skip the hidden set part...
+					// Hidden: If it has at least 2 values, track as potential
+					if (is_hidden == 1) {
+						cells_in_hidden_set[0][cnt_hidden] = r;
+						cells_in_hidden_set[1][cnt_hidden] = c;
+						// printf("Potential hidden pair: Row: %d, Col: %d\n", r + 1, c + 1);
+						cnt_hidden++;
+					}
+				} else if (sum == 1) {
+					// Hidden: If a cell has just one of the values in this combo, then it cannot be a hidden set
+					is_hidden = 0;  // so declare not hidden
 				}
 
 			} // col
@@ -691,14 +667,13 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		//    Ex: naked pair: in a row, there are 2 cells with only 5 & 9. All other 5's and 9's can be eliminated in that row.
 		//    http://hodoku.sourceforge.net/en/tech_naked.php
 		if (cnt_naked == set_size) { // If set_size number of naked cells found
-			printf("Running Naked set elimination\n");
 			// Then eliminate the values in the set from other cells in the same house.
 			for (r = row_start; r < row_end; r++) {
 				for (c = col_start; c < col_end; c++) {
 					// Skip cells it the naked set
 					skip = 0;
-					for (k = 0; k < cnt_naked; k++) {
-						if (cells_in_naked_set[0][k] == r && cells_in_naked_set[1][k] == c) {
+					for (a = 0; a < cnt_naked; a++) {
+						if (cells_in_naked_set[0][a] == r && cells_in_naked_set[1][a] == c) {
 							skip = 1;
 							break;
 						}
@@ -706,9 +681,10 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 					if (skip == 1) { continue; }
 
 					for (m = 0; m < set_size; m++) {
-						if (candidates[r][c][combos[m][n]] == 1) {
-							candidates[r][c][combos[m][n]] = 0;
-							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", combos[m][n]+1, r+1, c+1);
+						i = combos[m][n];
+						if (candidates[r][c][i] == 1) {
+							candidates[r][c][i] = 0;
+							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
 							num_removed++;
 						}
 					}
@@ -732,11 +708,10 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		// 2nd, Hidden Sets (where set_size number of values only exist in set_size cells)
 			//    Ex: hidden pair: in a col, there are only 2 cells with 4 & 8. All other candidates in those 2 cells can be removed.
 			//    http://hodoku.sourceforge.net/en/tech_hidden.php
-		if (cnt_hidden == set_size) { // If set_size number of hidden cells found
-			printf("Running Hidden set elimination\n");
+		if (is_hidden == 1 && cnt_hidden == set_size) { // If set_size number of hidden cells found
 
 			// Then eliminate any other candidates values from these cells
-			for (k = 0; k < cnt_hidden; k++) {
+			for (a = 0; a < cnt_hidden; a++) {
 				for (i = 0; i < LEN; i++) {
 					// Skip values in the current combo
 					skip = 0;
@@ -749,8 +724,8 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 					if (skip == 1) { continue; }
 
 					// Otherwise, remove the value
-					r = cells_in_hidden_set[0][k];
-					c = cells_in_hidden_set[1][k];
+					r = cells_in_hidden_set[0][a];
+					c = cells_in_hidden_set[1][a];
 					if (candidates[r][c][i] == 1) {
 						candidates[r][c][i] = 0;
 						printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
@@ -769,8 +744,6 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 			return 2;
 		}
 	}
-
-	printf("\n");
 
 	return 0;
 }
@@ -803,8 +776,8 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 	*num_hidden = 0;
 
 	// Check that set size is one this function can handle
-	if (set_size < 2 || set_size > 4) {
-		printf("** Invalid set_size: %d!! **", set_size);
+	if (set_size < 2 || set_size > 5) {
+		printf("** Invalid set_size: %d!! **\n", set_size);
 		return;
 	}
 
@@ -819,9 +792,9 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 			printf("  All other candidates were removed from the cells with these values in row %d\n\n", house + 1);
 		}
 
-		// if (result > 0) {
-		// 	return;
-		// }
+		 if (result > 0) {
+		 	return;
+		 }
 	}
 
 	// B: Search in columns
@@ -835,9 +808,9 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 			printf("  All other candidates were removed from the cells with these values in column %d\n\n", house + 1);
 		}
 
-		// if (result > 0) {
-		// 	return;
-		// }
+		 if (result > 0) {
+		 	return;
+		 }
 	}
 
 	// C: Search in boxes
@@ -854,9 +827,9 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 			printf("  All other candidates were removed from the cells with these values in box %d\n\n", house + 1);
 		}
 
-		// if (result > 0) {
-		// 	return;
-		// }
+		 if (result > 0) {
+		 	return;
+		 }
 	}
 
 	return;

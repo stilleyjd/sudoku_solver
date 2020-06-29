@@ -25,8 +25,12 @@ struct BoardStats {
     int num_times_locked_candidate = 0;
     int num_times_naked_pairs = 0;
     int num_times_hidden_pairs = 0;
-    int num_times_naked_triplets = 0;
-    int num_times_hidden_triplets = 0;
+    int num_times_naked_triples = 0;
+    int num_times_hidden_triples = 0;
+    int num_times_naked_quads = 0;
+    int num_times_hidden_quads = 0;
+    int num_times_naked_quints = 0;
+    int num_times_hidden_quints = 0;
     int num_times_random = 0;
 };
 
@@ -49,7 +53,7 @@ int main()
     int num_hidden = 0;
 
     // Copy of initial values in case of failure (the last deterministic state of the board)
-    // TODO: Get rid of these if possible!
+    // TODO: Get rid of these if possible. (if can get rid of brute force technique)
     int det_board[LEN][LEN] = { 0 };
     int det_candidates[LEN][LEN][LEN] = { 0 };
     struct BoardStats det_board_stats;
@@ -141,51 +145,64 @@ int main()
             continue;  // if hidden singles worked, go back to naked singles
 		}
 
-        // If made it this far, then display candidate values for next algorithms (and if puzzle is not too big...)
-        if (LEN < 10) {
-            display_candidates(board, candidates);
-        }
-
         // Locked Candidate
-        // TODO: Quit once one elimination has been made??
 		printf("\nNo new cells could be solved using Hidden Singles.\n"
-				"    Trying a Locked Candidate Search\n");
+				"    Trying a Locked Candidate Search...\n");
 		num_eliminations = locked_candidate_search(candidates);
 		board_stats.num_times_locked_candidate += num_eliminations;
 		if (num_eliminations > 0) {
 			continue;  // If locked candidates did something, give previous techniques another chance
 		}
 
-        // TODO: Naked/Hidden Sets. Includes:
-	    //	Naked Pairs: article and https://www.learn-sudoku.com/naked-pairs.html
-        // 	Naked Triplets+ : similar to naked pairs: https://www.learn-sudoku.com/naked-triplets.html
-        // 	Hidden Pairs: similar to naked pairs
-		//    -- Try this before naked pairs, as naked pairs is a sub-set of this!
-        // 		https://www.learn-sudoku.com/hidden-pairs.html
-        //  	Also, can extend to hidden triplets and quadruplets ...
-		printf("\nNo candidates could be eliminated with previous techniques.\n"
-				"    Trying a Naked/Hidden Pairs Search\n");
+        // If made it this far, then display candidate values for next algorithms (and if puzzle is not too big...)
+        if (LEN < 10) {
+            display_candidates(board, candidates);
+        }
 
+        // Naked/Hidden Sets. Includes:
+	    //	Naked Pairs: article and https://www.learn-sudoku.com/naked-pairs.html
+		//  Hidden Pairs: https://www.learn-sudoku.com/hidden-pairs.html
+        // 	Naked Triplets+ : similar to naked pairs: https://www.learn-sudoku.com/naked-triplets.html
 		num_naked = 0;
 		num_hidden = 0;
+
+        // Pairs
+		printf("\nNo candidates could be eliminated with previous techniques.\n"
+				"    Trying a Naked/Hidden Pairs Search...\n");
 		naked_hidden_sets_search(candidates, 2, &num_naked, &num_hidden);
 		board_stats.num_times_naked_pairs += num_naked;
 		board_stats.num_times_hidden_pairs += num_hidden;
 		if (num_naked + num_hidden > 0) {
-			// break;
 			continue; // If naked / hidden pairs did something, give previous techniques another chance
 		}
+		// Triples
+		printf("\nNo candidates could be eliminated with previous techniques.\n"
+				"    Trying a Naked/Hidden Triples Search...\n");
+		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
+		board_stats.num_times_naked_triples += num_naked;
+		board_stats.num_times_hidden_triples += num_hidden;
+		if (num_naked + num_hidden > 0) {
+			continue; // If naked / hidden triplets did something, give previous techniques another chance
+		}
+		// Quads
+		printf("\nNo candidates could be eliminated with previous techniques.\n"
+				"    Trying a Naked/Hidden Quadruples Search...\n");
+		naked_hidden_sets_search(candidates, 4, &num_naked, &num_hidden);
+		board_stats.num_times_naked_quads += num_naked;
+		board_stats.num_times_hidden_quads += num_hidden;
+		if (num_naked + num_hidden > 0) {
+			continue; // If naked / hidden quads did something, give previous techniques another chance
+		}
+		// Quints // TODO: Remove this?  Hasn't actually helped yet...
+		printf("\nNo candidates could be eliminated with previous techniques.\n"
+				"    Trying a Naked/Hidden Quintuples Search...\n");
+		naked_hidden_sets_search(candidates, 5, &num_naked, &num_hidden);
+		board_stats.num_times_naked_quints += num_naked;
+		board_stats.num_times_hidden_quints += num_hidden;
+		if (num_naked + num_hidden > 0) {
+			continue; // If naked / hidden quints did something, give previous techniques another chance
+		}
 
-//		// TODO: Try with larger set size
-//		printf("\nNo candidates could be eliminated with previous techniques.\n"
-//				"    Trying a Naked/Hidden Triplets Search\n");
-//		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
-//		board_stats.num_times_naked_triplets += num_naked;
-//		board_stats.num_times_hidden_triplets += num_hidden;
-//		if (num_naked + num_hidden > 0) {
-//			// break;
-//			continue; // If naked / hidden triplets did something, give previous techniques another chance
-//		}
 
         // TODO??: More advanced techniques like X-wing
         //   https://www.learn-sudoku.com/advanced-techniques.html
@@ -218,8 +235,12 @@ int main()
     printf("  Locked Candidate:  %d\n", board_stats.num_times_locked_candidate);
     printf("  Naked Pairs: %d\n", board_stats.num_times_naked_pairs);
     printf("  Hidden Pairs: %d\n", board_stats.num_times_hidden_pairs);
-    printf("  Naked Triplets: %d\n", board_stats.num_times_naked_triplets);
-    printf("  Hidden Triplets: %d\n", board_stats.num_times_hidden_triplets);
+    printf("  Naked Triples: %d\n", board_stats.num_times_naked_triples);
+    printf("  Hidden Triples: %d\n", board_stats.num_times_hidden_triples);
+    printf("  Naked Quadruples: %d\n", board_stats.num_times_naked_quads);
+    printf("  Hidden Quadruples: %d\n", board_stats.num_times_hidden_quads);
+    printf("  Naked Quintuples: %d\n", board_stats.num_times_naked_quints);
+    printf("  Hidden Quintuples: %d\n", board_stats.num_times_hidden_quints);
     printf("  Random Choice:  %d\n", board_stats.num_times_random);
 
 	printf("\nTook %d rounds\n", round);
