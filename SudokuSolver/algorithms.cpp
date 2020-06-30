@@ -797,7 +797,82 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 	return;
 }
 
+
+int x_wing_search(int candidates[LEN][LEN][LEN]) {
+	int num_occurances = 0;
+
+	int i, r, c, n, m, x;
+	int sum;
+	int spots[2] = {0};
+	int match;
+	int num_removed = 0;
+
+	for (i = 0; i < LEN; i++ ) {
+		// A: Search rows to see if 2 rows with i in the same 2 and only 2 spot
+		for (r = 0; r < LEN-1; r++) {  // note: don't include last row in initial search
+			sum = 0;
+			for (c = 0; c < LEN; c++) {
+				if (candidates[r][c][i] == 1) {
+					if (sum < 2) {
+						spots[sum] = c;
+					}
+					sum++;
+				}
+			}
+			// If, after search, there are only 2 cells with that candidate, then check the remaining rows
+			if (sum != 2) {
+				continue;
+			}
+
+			for (n = r + 1; n < LEN; n++) { // Search remaining rows for a match
+				match = 1;
+				for (c = 0; c < LEN-1; c++) {
+					// If c is in spots, make sure it is a candidate
+					if (c == spots[0] || c == spots[1]) {
+						if (candidates[n][c][i] != 1) {
+							match = 0;
+							break; // If spots in this row don't match, move on
+						}
+					} else if (candidates[n][c][i] == 1) {
+						match = 0;
+						break; // Otherwise, if there are other cells with candidate, move on...
+					}
+				}
+				if (match == 1) {
+					// If there is an x-wing, then eliminate the candidate value in spots in other rows!
+					for (m = 0; m < LEN; m++) {
+						if (m == r || m == n) {
+							continue; // skip rows of x-wing
+						}
+						for (x = 0; x < 2; x++) {
+							c = spots[x];
+							if (candidates[m][c][i] == 1) {
+								candidates[m][c][i] = 0;
+								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, m+1, c+1);
+								num_removed++;
+							}
+						} // spot
+					} // row
+
+					if (num_removed > 0) {
+						printf("X-Wing found for value of %d, in rows %d & %d, columns %d & %d\n", i+1, r+1, n+1, spots[0]+1, spots[1]+1);
+						num_occurances++;
+						return num_occurances;
+					}
+				} // if match
+			} // remaining rows
+
+		} // rows
+
+		// TODO: B: Search columns to see if there are 2 columns with i in the same 2 and only 2 spots
+
+	} // i (candidate)
+
+	return num_occurances;
+}
+
 // *******************************************************************************************
+
 
 // Finally, if all else fails, this technique will just pick a value from the cell with fewest candidates
 int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {

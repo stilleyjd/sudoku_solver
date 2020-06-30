@@ -20,18 +20,19 @@ Note: some of techniques here come from:
 
 struct BoardStats {
     int num_empty_cells = LEN * LEN;
-    int num_times_naked_single = 0;
-    int num_times_hidden_single = 0;
-    int num_times_locked_candidate = 0;
-    int num_times_naked_pairs = 0;
-    int num_times_hidden_pairs = 0;
-    int num_times_naked_triples = 0;
-    int num_times_hidden_triples = 0;
-    int num_times_naked_quads = 0;
-    int num_times_hidden_quads = 0;
-    int num_times_naked_quints = 0;
-    int num_times_hidden_quints = 0;
-    int num_times_random = 0;
+    int naked_single = 0;
+    int hidden_single = 0;
+    int locked_candidate = 0;
+    int naked_pairs = 0;
+    int hidden_pairs = 0;
+    int naked_triples = 0;
+    int hidden_triples = 0;
+    int naked_quads = 0;
+    int hidden_quads = 0;
+    int naked_quints = 0;
+    int hidden_quints = 0;
+    int x_wing = 0;
+    int random = 0;
 };
 
 
@@ -106,7 +107,7 @@ int main()
         do {
             // Do naked single search first (where only one value is missing after looking at row, col, box)
             num_cells_found = naked_single_search(board, candidates);
-            board_stats.num_times_naked_single += num_cells_found;
+            board_stats.naked_single += num_cells_found;
             board_stats.num_empty_cells -= num_cells_found;
         } while (num_cells_found > 0);
 
@@ -141,7 +142,7 @@ int main()
 		printf("\nNo new cells could be solved in the last iteration.\n"
 				"    Trying Hidden Singles Search\n");
 		num_cells_found = hidden_single_search(board, candidates);
-		board_stats.num_times_hidden_single += num_cells_found;
+		board_stats.hidden_single += num_cells_found;
 		board_stats.num_empty_cells -= num_cells_found;
 		if (num_cells_found > 0) {
             continue;  // if hidden singles worked, go back to naked singles
@@ -151,7 +152,7 @@ int main()
 		printf("\nNo new cells could be solved using Hidden Singles.\n"
 				"    Trying a Locked Candidate Search...\n");
 		num_eliminations = locked_candidate_search(candidates);
-		board_stats.num_times_locked_candidate += num_eliminations;
+		board_stats.locked_candidate += num_eliminations;
 		if (num_eliminations > 0) {
 			continue;  // If locked candidates did something, give previous techniques another chance
 		}
@@ -161,6 +162,17 @@ int main()
             display_candidates(board, candidates);
         }
 
+
+        // TODO??: More advanced techniques like X-wing, Sword fish, XY Wing
+        //   https://www.learn-sudoku.com/advanced-techniques.html
+		printf("    Trying a X-Wing Search...\n");
+		num_eliminations = x_wing_search(candidates);
+		board_stats.x_wing += num_eliminations;
+		if (num_eliminations > 0) {
+			continue;  // If this search did something, give previous techniques another chance
+		}
+
+
         // Naked/Hidden Sets. Includes:
 	    //	Naked Pairs: article and https://www.learn-sudoku.com/naked-pairs.html
 		//  Hidden Pairs: https://www.learn-sudoku.com/hidden-pairs.html
@@ -169,42 +181,38 @@ int main()
 		num_hidden = 0;
 
         // Pairs
-		printf("\nNo candidates could be eliminated with previous techniques.\n"
-				"    Trying a Naked/Hidden Pairs Search...\n");
+		printf("    Trying a Naked/Hidden Pairs Search...\n");
 		naked_hidden_sets_search(candidates, 2, &num_naked, &num_hidden);
-		board_stats.num_times_naked_pairs += num_naked;
-		board_stats.num_times_hidden_pairs += num_hidden;
+		board_stats.naked_pairs += num_naked;
+		board_stats.hidden_pairs += num_hidden;
 		if (num_naked + num_hidden > 0) {
 			continue; // If naked / hidden pairs did something, give previous techniques another chance
 		}
 		// Triples
 		printf("    Trying a Naked/Hidden Triples Search...\n");
 		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
-		board_stats.num_times_naked_triples += num_naked;
-		board_stats.num_times_hidden_triples += num_hidden;
+		board_stats.naked_triples += num_naked;
+		board_stats.hidden_triples += num_hidden;
 		if (num_naked + num_hidden > 0) {
 			continue; // If naked / hidden triplets did something, give previous techniques another chance
 		}
 		// Quads
 		printf("    Trying a Naked/Hidden Quadruples Search...\n");
 		naked_hidden_sets_search(candidates, 4, &num_naked, &num_hidden);
-		board_stats.num_times_naked_quads += num_naked;
-		board_stats.num_times_hidden_quads += num_hidden;
+		board_stats.naked_quads += num_naked;
+		board_stats.hidden_quads += num_hidden;
 		if (num_naked + num_hidden > 0) {
 			continue; // If naked / hidden quads did something, give previous techniques another chance
 		}
 		// Quints // TODO: Remove this?  Hasn't actually helped yet...
 		printf("    Trying a Naked/Hidden Quintuples Search...\n");
 		naked_hidden_sets_search(candidates, 5, &num_naked, &num_hidden);
-		board_stats.num_times_naked_quints += num_naked;
-		board_stats.num_times_hidden_quints += num_hidden;
+		board_stats.naked_quints += num_naked;
+		board_stats.hidden_quints += num_hidden;
 		if (num_naked + num_hidden > 0) {
 			continue; // If naked / hidden quints did something, give previous techniques another chance
 		}
 
-
-        // TODO??: More advanced techniques like X-wing, Sword fish, XY Wing
-        //   https://www.learn-sudoku.com/advanced-techniques.html
 
 
         // Finally, try a Brute Force technique
@@ -213,7 +221,7 @@ int main()
 		// TODO: Make this more systematic than random (like step through candidates instead)
 		num_cells_found = randomized_value_board_search(board, candidates);
 		board_stats.num_empty_cells -= num_cells_found;
-		board_stats.num_times_random += num_cells_found;
+		board_stats.random += num_cells_found;
 
 		if (num_cells_found > 0) {
 			used_random_values = 1;
@@ -256,34 +264,38 @@ int main()
 	}
 
     printf("\nNumber of times the various algorithms were used: \n");
-    printf("  Naked Singles:  %d\n", board_stats.num_times_naked_single);
-    printf("  Hidden Singles: %d\n", board_stats.num_times_hidden_single);
-    if (board_stats.num_times_locked_candidate > 0) {
-        printf("  Locked Candidate:  %d\n", board_stats.num_times_locked_candidate);
+    printf("  Naked Singles:  %d\n", board_stats.naked_single);
+    printf("  Hidden Singles: %d\n", board_stats.hidden_single);
+    if (board_stats.locked_candidate > 0) {
+        printf("  Locked Candidate:  %d\n", board_stats.locked_candidate);
         difficulty = 1;
     }
-    if (board_stats.num_times_naked_pairs + board_stats.num_times_hidden_pairs > 0) {
-		printf("  Naked Pairs: %d\n", board_stats.num_times_naked_pairs);
-		printf("  Hidden Pairs: %d\n", board_stats.num_times_hidden_pairs);
+    if (board_stats.naked_pairs + board_stats.hidden_pairs > 0) {
+		printf("  Naked Pairs: %d\n", board_stats.naked_pairs);
+		printf("  Hidden Pairs: %d\n", board_stats.hidden_pairs);
         difficulty = 2;
     }
-    if (board_stats.num_times_naked_triples + board_stats.num_times_hidden_triples > 0) {
-		printf("  Naked Triples: %d\n", board_stats.num_times_naked_triples);
-		printf("  Hidden Triples: %d\n", board_stats.num_times_hidden_triples);
+    if (board_stats.naked_triples + board_stats.hidden_triples > 0) {
+		printf("  Naked Triples: %d\n", board_stats.naked_triples);
+		printf("  Hidden Triples: %d\n", board_stats.hidden_triples);
         difficulty = 3;
     }
-    if (board_stats.num_times_naked_quads + board_stats.num_times_hidden_quads > 0) {
-		printf("  Naked Quadruples: %d\n", board_stats.num_times_naked_quads);
-		printf("  Hidden Quadruples: %d\n", board_stats.num_times_hidden_quads);
+    if (board_stats.naked_quads + board_stats.hidden_quads > 0) {
+		printf("  Naked Quadruples: %d\n", board_stats.naked_quads);
+		printf("  Hidden Quadruples: %d\n", board_stats.hidden_quads);
         difficulty = 3;
     }
-    if (board_stats.num_times_naked_quints + board_stats.num_times_hidden_quints > 0) {
-		printf("  Naked Quintuples: %d\n", board_stats.num_times_naked_quints);
-		printf("  Hidden Quintuples: %d\n", board_stats.num_times_hidden_quints);
+    if (board_stats.naked_quints + board_stats.hidden_quints > 0) {
+		printf("  Naked Quintuples: %d\n", board_stats.naked_quints);
+		printf("  Hidden Quintuples: %d\n", board_stats.hidden_quints);
         difficulty = 3;
     }
-    if (board_stats.num_times_random > 0) {
-    	printf("  Random Choice:  %d\n", board_stats.num_times_random);
+    if (board_stats.x_wing >= 0) {
+		printf("  X-Wing: %d\n", board_stats.x_wing);
+        difficulty = 3;
+    }
+    if (board_stats.random > 0) {
+    	printf("  Random Choice:  %d\n", board_stats.random);
         difficulty = 4;
     }
 
