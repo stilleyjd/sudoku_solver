@@ -7,10 +7,11 @@
 #include <math.h>
 #include <string.h>
 #include "board_globals.h"
+#include "puzzles.h"
 #include "read_and_display.h"
 
 
-// NOTE! These are now defined in board_globals.h
+// NOTE! These are now defined in puzzels.h
 // #define FILENAME
 // #define PATHNAME
 
@@ -18,13 +19,16 @@
 #include <windows.h>
 #endif
 
-void print_line() {
+void print_line(int add_dash = 0) {
     printf(" ");
     for (int i = 0; i < LEN; i++) {
         printf("----");
     }
     for (int i = 0; i < NUM-1; i++) {
         printf("-");
+        if (add_dash > 0) {
+            printf("-");
+        }
     }
     printf("\n");
 }
@@ -76,41 +80,74 @@ void display_board(int board[LEN][LEN]) {
     }
 }
 
+void print_spaces(int num) {
+	if (num < 1) {
+		return;
+	}
+	for (int i = 0; i < num; i++) {
+		printf(" ");
+	}
+}
+
 void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+    int ind_start;
+    int offset = (int) NUM/2;
+
     printf("\nCandidate State: \n");
-    printf(" -----------------------------------------------------------------------------------------\n");  // Top box line
+    print_line(1);
+
+    // printf("offset: %d \n", offset);
 
     for (int row = 0; row < LEN; row++) {
-        printf("| "); // Print the left box line
-        for (int col = 0; col < LEN; col++) {
-            if (board[row][col] == 0) {
-                for (int ind = 0; ind < LEN; ind++) {
-                    if (candidates[row][col][ind] == 1) {
-                        printf("%d", ind + 1);
-                    }
-                    else {
-                        printf("-");
-                    }
-                }
-            }
-            else {
-                printf("    %d    ", board[row][col]);
-            }
-            // Pad with line (if section end) or spaces
-            if (col % NUM == NUM - 1) {
-                printf("|");
-            }
-            else {
-                printf(" ");
-            }
+        ind_start = 0;
+
+    	// Each row gets NUM candidates to print candidates
+        for (int cnt = 0; cnt < NUM; cnt++) {
+        	if (cnt > 0) {
+        		ind_start += NUM;
+        	}
+
+            printf("| "); // Print the left box line
+			for (int col = 0; col < LEN; col++) {
+				// print candidates if cell not yet solved
+				if (board[row][col] == 0) {
+					for (int ind = ind_start; ind < ind_start+NUM; ind++) {
+						if (candidates[row][col][ind] == 1) {
+							printf("%d", ind + 1);
+						}
+						else {
+							printf("-");
+						}
+					}
+				}
+				// Print known values
+				else if (cnt == offset) {
+					print_spaces(offset);
+					printf("%d", board[row][col]);
+					print_spaces(NUM - 1 - offset);
+				}
+				else {
+					print_spaces(NUM);
+				}
+
+				// Separate columns with line (if section end) or spaces
+				if (col % NUM == NUM - 1) {
+					printf(" | ");
+				}
+				else {
+					printf(" ");
+				}
+			}
+
+	        printf("\n"); // Start a new line
         }
-        printf("\n"); // Start a new row
+
         if (row % NUM == NUM - 1) {
-            printf(" -----------------------------------------------------------------------------------------\n");  // Bottom section line
+            print_line(1);
         }
-        else {
-            printf("|                              |                             |                             |\n");  // If empty row, just print separators
-        }
+//        else {
+//        	print_separators();
+//        }
     }
 }
 

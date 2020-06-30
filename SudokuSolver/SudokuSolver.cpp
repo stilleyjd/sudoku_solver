@@ -52,6 +52,8 @@ int main()
     int num_naked = 0;
     int num_hidden = 0;
 
+    int difficulty = 0;
+
     // Copy of initial values in case of failure (the last deterministic state of the board)
     // TODO: Get rid of these if possible. (if can get rid of brute force technique)
     int det_board[LEN][LEN] = { 0 };
@@ -68,8 +70,8 @@ int main()
 
     // Check to make sure that each row, col, and box only has 1 - 9 once
     check_for_double_values(board, double_values);
-    if (double_values[0] > -1) {
-        printf("\nThe board has a double value at %d, %d! Cannot continue!!\n", double_values[0], double_values[1]);
+    if (double_values[0] + double_values[1] > -1) {
+        printf("Cannot continue due to invalid board!!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -176,8 +178,7 @@ int main()
 			continue; // If naked / hidden pairs did something, give previous techniques another chance
 		}
 		// Triples
-		printf("\nNo candidates could be eliminated with previous techniques.\n"
-				"    Trying a Naked/Hidden Triples Search...\n");
+		printf("    Trying a Naked/Hidden Triples Search...\n");
 		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
 		board_stats.num_times_naked_triples += num_naked;
 		board_stats.num_times_hidden_triples += num_hidden;
@@ -185,8 +186,7 @@ int main()
 			continue; // If naked / hidden triplets did something, give previous techniques another chance
 		}
 		// Quads
-		printf("\nNo candidates could be eliminated with previous techniques.\n"
-				"    Trying a Naked/Hidden Quadruples Search...\n");
+		printf("    Trying a Naked/Hidden Quadruples Search...\n");
 		naked_hidden_sets_search(candidates, 4, &num_naked, &num_hidden);
 		board_stats.num_times_naked_quads += num_naked;
 		board_stats.num_times_hidden_quads += num_hidden;
@@ -194,8 +194,7 @@ int main()
 			continue; // If naked / hidden quads did something, give previous techniques another chance
 		}
 		// Quints // TODO: Remove this?  Hasn't actually helped yet...
-		printf("\nNo candidates could be eliminated with previous techniques.\n"
-				"    Trying a Naked/Hidden Quintuples Search...\n");
+		printf("    Trying a Naked/Hidden Quintuples Search...\n");
 		naked_hidden_sets_search(candidates, 5, &num_naked, &num_hidden);
 		board_stats.num_times_naked_quints += num_naked;
 		board_stats.num_times_hidden_quints += num_hidden;
@@ -204,7 +203,7 @@ int main()
 		}
 
 
-        // TODO??: More advanced techniques like X-wing
+        // TODO??: More advanced techniques like X-wing, Sword fish, XY Wing
         //   https://www.learn-sudoku.com/advanced-techniques.html
 
 
@@ -226,52 +225,87 @@ int main()
     }
 
     // Finish up
-    printf("\nFinal Solution: \n");
-    display_board(board);
-
-    printf("\nNumber of times the various algorithms were used: \n");
-    printf("  Naked Singles:  %d\n", board_stats.num_times_naked_single);
-    printf("  Hidden Singles: %d\n", board_stats.num_times_hidden_single);
-    printf("  Locked Candidate:  %d\n", board_stats.num_times_locked_candidate);
-    printf("  Naked Pairs: %d\n", board_stats.num_times_naked_pairs);
-    printf("  Hidden Pairs: %d\n", board_stats.num_times_hidden_pairs);
-    printf("  Naked Triples: %d\n", board_stats.num_times_naked_triples);
-    printf("  Hidden Triples: %d\n", board_stats.num_times_hidden_triples);
-    printf("  Naked Quadruples: %d\n", board_stats.num_times_naked_quads);
-    printf("  Hidden Quadruples: %d\n", board_stats.num_times_hidden_quads);
-    printf("  Naked Quintuples: %d\n", board_stats.num_times_naked_quints);
-    printf("  Hidden Quintuples: %d\n", board_stats.num_times_hidden_quints);
-    printf("  Random Choice:  %d\n", board_stats.num_times_random);
-
-	printf("\nTook %d rounds\n", round);
-	if (num_fails == 0) {
-		printf("  Completed with no retries \n\n");
-	}
-	else if (num_fails == 1) {
-		printf("  Had 1 retry \n\n");
-	}
-	else {
-		printf("  Had %d retries \n\n", num_fails);
-	}
+    printf("\n");
 
     if (board_stats.num_empty_cells == 0) {
 		// Check to make sure that each row, col, and box only has 1 - 9 once
 		int double_values[2] = { -1, -1 };
 		check_for_double_values(board, double_values);
 
-
 		if (double_values[0] == -1) {
 			printf("\nThe solution is valid. Success!!\n");
-			exit(EXIT_SUCCESS);
 		}
 		else {
 			printf("\nThe solution had an invalid result at %d, %d!!!\n", double_values[0], double_values[1]);
 			exit(EXIT_FAILURE);
 		}
 	}
-    else {
-        printf("\n\nFAILED!\n");
+
+    printf("\nFinal Solution:");
+    display_board(board);
+
+	printf("\nTook %d rounds\n", round);
+	if (num_fails == 0) {
+		printf("  Completed with no retries \n");
+	}
+	else if (num_fails == 1) {
+		printf("  Had 1 retry \n");
+	}
+	else {
+		printf("  Had %d retries \n", num_fails);
+	}
+
+    printf("\nNumber of times the various algorithms were used: \n");
+    printf("  Naked Singles:  %d\n", board_stats.num_times_naked_single);
+    printf("  Hidden Singles: %d\n", board_stats.num_times_hidden_single);
+    if (board_stats.num_times_locked_candidate > 0) {
+        printf("  Locked Candidate:  %d\n", board_stats.num_times_locked_candidate);
+        difficulty = 1;
+    }
+    if (board_stats.num_times_naked_pairs + board_stats.num_times_hidden_pairs > 0) {
+		printf("  Naked Pairs: %d\n", board_stats.num_times_naked_pairs);
+		printf("  Hidden Pairs: %d\n", board_stats.num_times_hidden_pairs);
+        difficulty = 2;
+    }
+    if (board_stats.num_times_naked_triples + board_stats.num_times_hidden_triples > 0) {
+		printf("  Naked Triples: %d\n", board_stats.num_times_naked_triples);
+		printf("  Hidden Triples: %d\n", board_stats.num_times_hidden_triples);
+        difficulty = 3;
+    }
+    if (board_stats.num_times_naked_quads + board_stats.num_times_hidden_quads > 0) {
+		printf("  Naked Quadruples: %d\n", board_stats.num_times_naked_quads);
+		printf("  Hidden Quadruples: %d\n", board_stats.num_times_hidden_quads);
+        difficulty = 3;
+    }
+    if (board_stats.num_times_naked_quints + board_stats.num_times_hidden_quints > 0) {
+		printf("  Naked Quintuples: %d\n", board_stats.num_times_naked_quints);
+		printf("  Hidden Quintuples: %d\n", board_stats.num_times_hidden_quints);
+        difficulty = 3;
+    }
+    if (board_stats.num_times_random > 0) {
+    	printf("  Random Choice:  %d\n", board_stats.num_times_random);
+        difficulty = 4;
+    }
+
+    if (difficulty == 0) {
+    	printf("\nDiffucluty of Board: Easy \n");
+    } else if (difficulty == 1) {
+    	printf("\nDiffucluty of Board: Medium \n");
+    } else if (difficulty == 2) {
+    	printf("\nDiffucluty of Board: Hard \n");
+    } else if (difficulty == 3) {
+    	printf("\nDiffucluty of Board: Very Hard \n");
+    } else if (difficulty == 4) {
+    	printf("\nDiffucluty of Board: Evil! \n");
+    }
+
+
+    if (board_stats.num_empty_cells > 0) {
+        printf("\n\nFailed to complete the board!\n");
         exit(EXIT_FAILURE);
     }
+
+	// If made it this far, then exit successfully!
+    exit(EXIT_SUCCESS);
 }
 

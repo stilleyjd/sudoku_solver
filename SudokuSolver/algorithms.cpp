@@ -21,46 +21,6 @@ int sum_ints(int L, int x[]) {
     return sum;
 }
 
-/*
-void expand_candidate(int candidate_bin, int candidate_array[]) {
-    int residual = candidate_bin;
-    int i;
-
-    // reset candidate to 0s
-    memset(candidate_array, 0, sizeof(candidate_array));
-
-    if (candidate_bin == 0) {
-        return;
-    }
-
-    // Then populate based on binary value
-    // values 1  2  3  4  5  6  7  8  9
-    // array {1, 1, 1, 1, 1, 1, 1, 1, 1}
-    // binary 111111111 = 511 (max value)
-    // printf("Candidate values are: ");
-    for (i = 0; i < LEN; i++) {
-        candidate_array[i] = residual % 2;
-        residual = round(residual / 2);
-        // if (candidate_array[i] == 1) {
-        //     printf("%d ", i + 1);
-        // }
-    }
-    // printf("\n");
-}
-
-int collapse_candidate(int candidate_array[]) {
-    int candidate_bin = 0;
-    int i;
-
-    for (i = 0; i < LEN; i++) {
-        if (candidate_array[i] == 1) {
-            candidate_bin = candidate_bin + round(pow(2, i));
-        }
-    }
-    return candidate_bin;
-}
-*/
-
 void display_array_values(int len, int array_values[]) {
     for (int i = 0; i < len; i++) {
 		printf("%d, ", array_values[i]);
@@ -544,9 +504,10 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 
 	// Set up variables used by the rest of the function
 	int a, b, d, e;
-	int m, n;
 	int combos[set_size][num_combos] = { 0 };
 
+
+	int m, n;
 	int cnt_naked = 0;
 	int cnt_hidden = 0;
 	int is_hidden;
@@ -693,7 +654,8 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 
 		} else if (cnt_naked > set_size) {
 			printf("!! %d candidates found for a naked set of size %d !!!", cnt_naked, set_size);
-			exit(EXIT_FAILURE);
+			// exit(EXIT_FAILURE);
+			return -1;
 		}
 
 		if (num_removed > 0) {

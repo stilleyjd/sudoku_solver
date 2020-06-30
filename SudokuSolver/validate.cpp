@@ -19,7 +19,7 @@ void check_area(int board[LEN][LEN], int row_start, int row_end, int col_start, 
                 return;
             }
             else if (found_values[*value - 1] > 1) {
-                printf("\nDouble value of %d found at %d, %d!!!\n", *value, r + 1, c + 1);
+                printf("\n\nDouble value of %d found at %d, %d!!!\n", *value, r + 1, c + 1);
                 double_coords[0] = r + 1;
                 double_coords[1] = c + 1;
                 return;
