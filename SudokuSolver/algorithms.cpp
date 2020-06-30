@@ -460,12 +460,18 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	 * 		Otherwise, returns 0.
 	 */
 
+	#define MAX_COMBOS 70  // Supports up to 8 values
+	#define MAX_SET_SIZE 5
+
 	int num_removed = 0;
 	int i, r, c;
 	int num = 0, sum = 0;
 	int values[LEN] = { 0 };
-	int num_combos = 1;
 
+	if (set_size > MAX_SET_SIZE) {
+		printf("Invalid set size: %d!!", set_size);
+		return -1;
+	}
 
 	if ((row_end - row_start) * (col_end - col_start) > LEN) {
 		printf("Invalid house size!!");
@@ -498,13 +504,12 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	// determine number of possible unique combinations with no repeats (Unordered Sampling without Replacement)
 	//		n!/(k!*(n-k)!),   where n = num, k = set_size
 	//    See: https://www.probabilitycourse.com/chapter2/2_1_3_unordered_without_replacement.php
-	if (num > set_size) {
-		num_combos = (int) factorial(num) / (factorial(set_size) * factorial(num - set_size));
-	}
-
+	
 	// Set up variables used by the rest of the function
+	
+	int num_combos = (int) factorial(num) / (factorial(set_size) * factorial(num - set_size));
 	int a, b, d, e;
-	int combos[set_size][num_combos] = { 0 };
+	int combos[MAX_SET_SIZE][MAX_COMBOS] = { 0 };
 
 
 	int m, n;
@@ -512,8 +517,13 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	int cnt_hidden = 0;
 	int is_hidden;
 	int skip;
-	int cells_in_naked_set[set_size][LEN] = { 0 };
-	int cells_in_hidden_set[set_size][LEN] = { 0 };
+	int cells_in_naked_set[2][LEN] = { 0 };
+	int cells_in_hidden_set[2][LEN] = { 0 };
+
+	if (num_combos > MAX_COMBOS) {
+		printf("There are more than %d number of combinations: %d!\n  Limiting number to max size.\n", MAX_COMBOS, num_combos);
+		num_combos = MAX_COMBOS;
+	}
 
 	// TODO: could this be one loop/algorithm instead?
 	n = 0;
@@ -865,6 +875,61 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 		} // rows
 
 		// TODO: B: Search columns to see if there are 2 columns with i in the same 2 and only 2 spots
+		for (c = 0; c < LEN - 1; c++) {  // note: don't include last column in initial search
+			sum = 0;
+			for (r = 0; r < LEN; r++) {
+				if (candidates[r][c][i] == 1) {
+					if (sum < 2) {
+						spots[sum] = r;
+					}
+					sum++;
+				}
+			}
+			// If, after search, there are only 2 cells with that candidate, then check the remaining columns
+			if (sum != 2) {
+				continue;
+			}
+
+			for (n = c + 1; n < LEN; n++) { // Search remaining columns for a match
+				match = 1;
+				for (r = 0; r < LEN - 1; r++) {
+					// If c is in spots, make sure it is a candidate
+					if (r == spots[0] || r == spots[1]) {
+						if (candidates[r][n][i] != 1) {
+							match = 0;
+							break; // If spots in this row don't match, move on
+						}
+					}
+					else if (candidates[r][n][i] == 1) {
+						match = 0;
+						break; // Otherwise, if there are other cells with candidate, move on...
+					}
+				}
+				if (match == 1) {
+					// If there is an x-wing, then eliminate the candidate value in spots in other columns!
+					for (m = 0; m < LEN; m++) {
+						if (m == c || m == n) {
+							continue; // skip columns of x-wing
+						}
+						for (x = 0; x < 2; x++) {
+							r = spots[x];
+							if (candidates[r][m][i] == 1) {
+								candidates[r][m][i] = 0;
+								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i + 1, r + 1, m + 1);
+								num_removed++;
+							}
+						} // spot
+					} // col
+
+					if (num_removed > 0) {
+						printf("X-Wing found for value of %d, in columns %d & %d, rows %d & %d\n", i + 1, c + 1, n + 1, spots[0] + 1, spots[1] + 1);
+						num_occurances++;
+						return num_occurances;
+					}
+				} // if match
+			} // remaining columns
+
+		} // columns
 
 	} // i (candidate)
 

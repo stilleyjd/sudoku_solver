@@ -19,10 +19,10 @@
 // Still need random number
 // #define FILENAME "P7.txt"  // Very hard: 1 random + Naked & hidden singles, locked candidates, and naked & hidden pairs
 // #define FILENAME "P12.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and naked & hidden pairs and triples
-// #define FILENAME "P13.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and hidden pairs and triples
+// #define FILENAME "P13.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and hidden pairs and triples, and x-wing
 // #define FILENAME "P14.txt" // Extremely hard: 2 random + Naked & hidden singles, locked candidates, hidden pairs, and naked quints (5)
-// #define FILENAME "P19.txt" // Extremely hard: 3 random + Naked & hidden singles, locked candidates, naked & hidden pairs, and naked quints (5)
-#define FILENAME "P15_Hardest.txt" // Evil!: 5 random + Naked & hidden singles, locked candidates, and naked & hidden pairs, triples, and quads (4)
+#define FILENAME "P19.txt" // Extremely hard: 3 random + Naked & hidden singles, locked candidates, naked & hidden pairs, and naked quints (5)
+// #define FILENAME "P15_Hardest.txt" // Evil!: 5 random + Naked & hidden singles, locked candidates, and naked & hidden pairs, triples, and quads (4)
 // #define FILENAME "P18.txt"  //        Evil!: 6 random + Naked & hidden singles, locked candidates, and naked & hidden pairs, and quads (4)
 
 // #define FILENAME "P19.txt"
