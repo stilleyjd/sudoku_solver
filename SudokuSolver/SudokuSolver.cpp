@@ -212,6 +212,17 @@ int main()
 			continue;  // If this search did something, give previous techniques another chance
 		}
 
+	    // TODO: More advanced techniques like Sword fish, XY Wing
+		//   https://www.learn-sudoku.com/advanced-techniques.html
+//		#ifdef PRINT_DEBUG
+//		printf("    Trying a X-Wing Search...\n");
+//		#endif
+//		num_eliminations = x_wing_search(candidates);
+//		board_stats.x_wing += num_eliminations;
+//		if (num_eliminations > 0) {
+//			continue;  // If this search did something, give previous techniques another chance
+//		}
+
 		// More Naked/Hidden Sets (once that help less often...)
 		// Quads
 		#ifdef PRINT_DEBUG
@@ -234,16 +245,19 @@ int main()
 			continue; // If naked / hidden quints did something, give previous techniques another chance
 		}
 
-	    // TODO: More advanced techniques like Sword fish, XY Wing
-		//   https://www.learn-sudoku.com/advanced-techniques.html
+	    // TODO: Swordfish (Like X-wing, but looking for same value in 2-3 spots in 3 rows/columns):
+		//    https://www.learn-sudoku.com/swordfish.html
 //		#ifdef PRINT_DEBUG
-//		printf("    Trying a X-Wing Search...\n");
+//		printf("    Trying a Swordfish Search...\n");
 //		#endif
 //		num_eliminations = x_wing_search(candidates);
 //		board_stats.x_wing += num_eliminations;
 //		if (num_eliminations > 0) {
 //			continue;  // If this search did something, give previous techniques another chance
 //		}
+
+		// TODO: Jellyfish (Like Swordfish, but looking for same value in 2-4 spots in 4 rows/columns):
+		//    http://nanpre.adg5.com/tec_en14.html
 
         // Finally, try a Brute Force technique
 		#ifdef PRINT_DEBUG
