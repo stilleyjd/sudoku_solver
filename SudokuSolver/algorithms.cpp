@@ -21,12 +21,12 @@ int sum_ints(int L, int x[]) {
     return sum;
 }
 
-void display_array_values(int len, int array_values[]) {
-    for (int i = 0; i < len; i++) {
-		printf("%d, ", array_values[i]);
-    }
-    printf("\n");
-}
+//void display_array_values(int len, int array_values[]) {
+//    for (int i = 0; i < len; i++) {
+//		printf("%d, ", array_values[i]);
+//    }
+//    printf("\n");
+//}
 
 void naked_single_elim_candidate(int board[LEN][LEN], int r, int c, int candidate_values[LEN]) {
     // Eliminate candidate values using the naked singles method.
@@ -105,7 +105,9 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                 else if (result != 0) {
                     board[row][col] = result;
                     // candidates[row][col] = 0;
+					#ifdef PRINT_DEBUG
                     printf("\nFound Naked Single result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
+					#endif
                     num_cells_completed++;
                 }
             }
@@ -182,8 +184,9 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                     num_cells_completed++;
                     // Remove candidates from this cell
                     memset(candidates[row][col], 0, sizeof(candidates[row][col]));
-
+					#ifdef PRINT_DEBUG
                     printf("\nFound Hidden Singles result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
+					#endif
                     return num_cells_completed;
                 }
             } // if cell not solved
@@ -258,11 +261,6 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 		col_start[n] = (int) (n%NUM) * NUM;
 	}
 
-	//	printf("Row start values: ");
-	//	display_array_values(LEN, row_start);
-	//	printf("Col start values: ");
-	//	display_array_values(LEN, col_start);
-
 	for (i = 0; i < LEN; i++) {
 
 		// 1st, look through rows and columns in each box (pointing)
@@ -299,8 +297,10 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
+					#ifdef PRINT_DEBUG
 					printf("Locked Candidate value of %d was only found in row %d of box %d.\n", i+1, spot_found+1, box+1);
 					printf("  This candidate value was removed from other boxes in row %d\n", spot_found+1);
+					#endif
 					num_occurances++;
 					return num_occurances;
 				}
@@ -336,8 +336,10 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
+					#ifdef PRINT_DEBUG
 					printf("Locked Candidate value of %d was only found in column %d of box %d\n", i+1, spot_found+1, box+1);
 					printf("  This candidate value was removed from other boxes in column %d\n", spot_found+1);
+					#endif
 					num_occurances++;
 					return num_occurances;
 				}
@@ -380,8 +382,10 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
+					#ifdef PRINT_DEBUG
 					printf("Locked Candidate value of %d was only found in box %d of row %d\n", i+1, box+1, r+1);
 					printf("  This candidate value was removed from other rows in box %d\n", box+1);
+					#endif
 					num_occurances++;
 					return num_occurances;
 				}
@@ -421,8 +425,10 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
+					#ifdef PRINT_DEBUG
 					printf("Locked Candidate value of %d was only found in box %d of col %d\n", i+1, box+1, c+1);
 					printf("  This candidate value was removed from other columns in box %d\n", box+1);
+					#endif
 					num_occurances++;
 					return num_occurances;
 				}
@@ -460,7 +466,8 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	 * 		Otherwise, returns 0.
 	 */
 
-	#define MAX_COMBOS 70  // Supports up to 8 values
+	// Supports up to 8 values
+	#define MAX_COMBOS 70
 	#define MAX_SET_SIZE 5
 
 	int num_removed = 0;
@@ -521,8 +528,11 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	int cells_in_hidden_set[2][LEN] = { 0 };
 
 	if (num_combos > MAX_COMBOS) {
+		#ifdef PRINT_DEBUG
 		printf("There are more than %d number of combinations: %d!\n  Limiting number to max size.\n", MAX_COMBOS, num_combos);
+		#endif
 		num_combos = MAX_COMBOS;
+		printf("Num combos now: %d\n", num_combos);
 	}
 
 	// TODO: could this be one loop/algorithm instead?
@@ -530,6 +540,9 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	if (set_size == 2) {
 		for (a = 0; a < num-1; a++) {
 			for (b = a+1; b < num; b++) {
+				if (n >= num_combos) {
+					break;
+				}
 				combos[0][n] = values[a];
 				combos[1][n] = values[b];
 				n++;
@@ -539,6 +552,9 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		for (a = 0; a < num-2; a++) {
 			for (b = a+1; b < num-1; b++) {
 				for (c = b+1; c < num; c++) {
+					if (n >= num_combos) {
+						break;
+					}
 					combos[0][n] = values[a];
 					combos[1][n] = values[b];
 					combos[2][n] = values[c];
@@ -551,6 +567,9 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 			for (b = a+1; b < num-2; b++) {
 				for (c = b+1; c < num-1; c++) {
 					for (d = c+1; d < num; d++) {
+						if (n >= num_combos) {
+							break;
+						}
 						combos[0][n] = values[a];
 						combos[1][n] = values[b];
 						combos[2][n] = values[c];
@@ -566,6 +585,9 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 				for (c = b+1; c < num-2; c++) {
 					for (d = c+1; d < num-1; d++) {
 						for (e = d+1; e < num; e++) {
+							if (n >= num_combos) {
+								break;
+							}
 							combos[0][n] = values[a];
 							combos[1][n] = values[b];
 							combos[2][n] = values[c];
@@ -577,13 +599,14 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 				}
 			}
 		}
-	} else {
-		printf("Invalid set_size: %d !!!", set_size);
-		return -1;
 	}
+//	else {
+//		printf("Naked/Hidden Set: Invalid set_size: %d !!!", set_size);
+//		return -1;
+//	}
 
 	if (n != num_combos) {
-		printf("More or less combinations found then expected! Found: %d, Expected %d\n Something went wrong!!!",
+		printf("Naked/Hidden Set: More or less combinations found then expected! Found: %d, Expected %d\n Something went wrong!!!",
 				n, num_combos);
 		exit(EXIT_FAILURE);
 	}
@@ -655,7 +678,9 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 						i = combos[m][n];
 						if (candidates[r][c][i] == 1) {
 							candidates[r][c][i] = 0;
+#ifdef PRINT_DEBUG
 							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
+#endif
 							num_removed++;
 						}
 					}
@@ -669,11 +694,13 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		}
 
 		if (num_removed > 0) {
+#ifdef PRINT_DEBUG
 			printf("Naked Set values were found: ");
 			for (m = 0; m < set_size-1; m++) {
 				printf("%d & ", combos[m][n] + 1);
 			}
 			printf("%d\n", combos[set_size-1][n] + 1);
+#endif
 			return 1;
 		}
 
@@ -700,7 +727,9 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 					c = cells_in_hidden_set[1][a];
 					if (candidates[r][c][i] == 1) {
 						candidates[r][c][i] = 0;
+#ifdef PRINT_DEBUG
 						printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
+#endif
 						num_removed++;
 					}
 				} // col
@@ -708,11 +737,13 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 		}
 
 		if (num_removed > 0) {
+#ifdef PRINT_DEBUG
 			printf("Hidden Set values were found: ");
 			for (m = 0; m < set_size-1; m++) {
 				printf("%d & ", combos[m][n] + 1);
 			}
 			printf("%d\n", combos[set_size-1][n] + 1);
+#endif
 			return 2;
 		}
 	}
@@ -758,10 +789,14 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 		result = naked_and_hidden_for_house(candidates, set_size, house, house + 1, 0, LEN);
 		if (result == 1) {
 			*num_naked += 1;
+#ifdef PRINT_DEBUG
 			printf("  These values were removed as candidates from other cells in row %d\n\n", house + 1);
+#endif
 		} else if (result == 2) {
 			*num_hidden += 1;
+#ifdef PRINT_DEBUG
 			printf("  All other candidates were removed from the cells with these values in row %d\n\n", house + 1);
+#endif
 		}
 
 		 if (result > 0) {
@@ -774,10 +809,14 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 		result = naked_and_hidden_for_house(candidates, set_size, 0, LEN, house, house + 1);
 		if (result == 1) {
 			*num_naked += 1;
+#ifdef PRINT_DEBUG
 			printf("  These values were removed as candidates from other cells in column %d\n\n", house + 1);
+#endif
 		} else if (result == 2) {
 			*num_hidden += 1;
+#ifdef PRINT_DEBUG
 			printf("  All other candidates were removed from the cells with these values in column %d\n\n", house + 1);
+#endif
 		}
 
 		 if (result > 0) {
@@ -793,10 +832,14 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 		result = naked_and_hidden_for_house(candidates, set_size, row_start, row_start+NUM, col_start, col_start+NUM);
 		if (result == 1) {
 			*num_naked += 1;
+#ifdef PRINT_DEBUG
 			printf("  These values were removed as candidates from other cells in box %d\n\n", house + 1);
+#endif
 		} else if (result == 2) {
 			*num_hidden += 1;
+#ifdef PRINT_DEBUG
 			printf("  All other candidates were removed from the cells with these values in box %d\n\n", house + 1);
+#endif
 		}
 
 		 if (result > 0) {
@@ -809,9 +852,12 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 
 
 int x_wing_search(int candidates[LEN][LEN][LEN]) {
+	// Look for rectangles of matches:  https://www.learn-sudoku.com/advanced-techniques.html
+
 	int num_occurances = 0;
 
-	int i, r, c, n, m, x;
+	int i, r, c, vector1, vector2, v, n;
+
 	int sum;
 	int spots[2] = {0};
 	int match;
@@ -819,10 +865,10 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 
 	for (i = 0; i < LEN; i++ ) {
 		// A: Search rows to see if 2 rows with i in the same 2 and only 2 spot
-		for (r = 0; r < LEN-1; r++) {  // note: don't include last row in initial search
+		for (vector1 = 0; vector1 < LEN-1; vector1++) {  // note: don't include last row in initial search
 			sum = 0;
 			for (c = 0; c < LEN; c++) {
-				if (candidates[r][c][i] == 1) {
+				if (candidates[vector1][c][i] == 1) {
 					if (sum < 2) {
 						spots[sum] = c;
 					}
@@ -834,38 +880,42 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 				continue;
 			}
 
-			for (n = r + 1; n < LEN; n++) { // Search remaining rows for a match
+			for (vector2 = vector1 + 1; vector2 < LEN; vector2++) { // Search remaining rows for a match
 				match = 1;
-				for (c = 0; c < LEN-1; c++) {
+				for (c = 0; c < LEN; c++) {
 					// If c is in spots, make sure it is a candidate
 					if (c == spots[0] || c == spots[1]) {
-						if (candidates[n][c][i] != 1) {
+						if (candidates[vector2][c][i] != 1) {
 							match = 0;
 							break; // If spots in this row don't match, move on
 						}
-					} else if (candidates[n][c][i] == 1) {
+					} else if (candidates[vector2][c][i] == 1) {
 						match = 0;
 						break; // Otherwise, if there are other cells with candidate, move on...
 					}
 				}
 				if (match == 1) {
 					// If there is an x-wing, then eliminate the candidate value in spots in other rows!
-					for (m = 0; m < LEN; m++) {
-						if (m == r || m == n) {
+					for (v = 0; v < LEN; v++) {
+						if (v == vector1 || v == vector2) {
 							continue; // skip rows of x-wing
 						}
-						for (x = 0; x < 2; x++) {
-							c = spots[x];
-							if (candidates[m][c][i] == 1) {
-								candidates[m][c][i] = 0;
-								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, m+1, c+1);
+						for (n = 0; n < 2; n++) {
+							c = spots[n];
+							if (candidates[v][c][i] == 1) {
+								candidates[v][c][i] = 0;
+								#ifdef PRINT_DEBUG
+								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, v+1, c+1);
+								#endif
 								num_removed++;
 							}
 						} // spot
 					} // row
 
 					if (num_removed > 0) {
-						printf("X-Wing found for value of %d, in rows %d & %d, columns %d & %d\n", i+1, r+1, n+1, spots[0]+1, spots[1]+1);
+						#ifdef PRINT_DEBUG
+						printf("X-Wing found for value of %d, in rows %d & %d, columns %d & %d\n", i+1, vector1+1, vector2+1, spots[0]+1, spots[1]+1);
+						#endif
 						num_occurances++;
 						return num_occurances;
 					}
@@ -874,11 +924,11 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 
 		} // rows
 
-		// TODO: B: Search columns to see if there are 2 columns with i in the same 2 and only 2 spots
-		for (c = 0; c < LEN - 1; c++) {  // note: don't include last column in initial search
+		// B: Search columns to see if there are 2 columns with i in the same 2 and only 2 spots
+		for (vector1 = 0; vector1 < LEN - 1; vector1++) {  // note: don't include last column in initial search
 			sum = 0;
 			for (r = 0; r < LEN; r++) {
-				if (candidates[r][c][i] == 1) {
+				if (candidates[r][vector1][i] == 1) {
 					if (sum < 2) {
 						spots[sum] = r;
 					}
@@ -890,39 +940,43 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 				continue;
 			}
 
-			for (n = c + 1; n < LEN; n++) { // Search remaining columns for a match
+			for (vector2 = vector1 + 1; vector2 < LEN; vector2++) { // Search remaining columns for a match
 				match = 1;
-				for (r = 0; r < LEN - 1; r++) {
-					// If c is in spots, make sure it is a candidate
+				for (r = 0; r < LEN; r++) {
+					// If vector1 is in spots, make sure it is a candidate
 					if (r == spots[0] || r == spots[1]) {
-						if (candidates[r][n][i] != 1) {
+						if (candidates[r][vector2][i] != 1) {
 							match = 0;
 							break; // If spots in this row don't match, move on
 						}
 					}
-					else if (candidates[r][n][i] == 1) {
+					else if (candidates[r][vector2][i] == 1) {
 						match = 0;
 						break; // Otherwise, if there are other cells with candidate, move on...
 					}
 				}
 				if (match == 1) {
 					// If there is an x-wing, then eliminate the candidate value in spots in other columns!
-					for (m = 0; m < LEN; m++) {
-						if (m == c || m == n) {
+					for (v = 0; v < LEN; v++) {
+						if (v == vector1 || v == vector2) {
 							continue; // skip columns of x-wing
 						}
-						for (x = 0; x < 2; x++) {
-							r = spots[x];
-							if (candidates[r][m][i] == 1) {
-								candidates[r][m][i] = 0;
-								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i + 1, r + 1, m + 1);
+						for (n = 0; vector2 < 2; vector2++) {
+							r = spots[vector2];
+							if (candidates[r][v][i] == 1) {
+								candidates[r][v][i] = 0;
+								#ifdef PRINT_DEBUG
+								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i + 1, r + 1, v + 1);
+								#endif
 								num_removed++;
 							}
 						} // spot
 					} // col
 
 					if (num_removed > 0) {
-						printf("X-Wing found for value of %d, in columns %d & %d, rows %d & %d\n", i + 1, c + 1, n + 1, spots[0] + 1, spots[1] + 1);
+						#ifdef PRINT_DEBUG
+						printf("X-Wing found for value of %d, in columns %d & %d, rows %d & %d\n", i + 1, vector1 + 1, vector2 + 1, spots[0] + 1, spots[1] + 1);
+						#endif
 						num_occurances++;
 						return num_occurances;
 					}
@@ -975,12 +1029,14 @@ int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][
 
     // Finally, pick a value for the cell with fewest possible values (if one found)
     if (row_min >= 0) {
+		#ifdef PRINT_DEBUG
         printf("\nSelecting a random result for row %d, col %d.\n Possible values are: ", row_min + 1, col_min + 1);
         for (int idx = 0; idx < LEN; idx++) {
             if (candidate_values_min[idx] == 1) {
                 printf("%d, ", idx + 1);
             }
         }
+		#endif
 
         while (result == 0) {
             rand_val = rand() % LEN; // Then gen a random value and see if it's a valid value
@@ -990,8 +1046,9 @@ int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][
                 result = rand_val + 1;
             }
         }
-
+		#ifdef PRINT_DEBUG
         printf("\nSelected a result of %d\n\n", result);
+		#endif
         board[row_min][col_min] = result;
         // NOTE: don't clear the candidate values, since it's good to keep track of these for the future
         num_cells_completed++;

@@ -19,28 +19,41 @@
 #include <windows.h>
 #endif
 
-void print_line(int add_dash = 0) {
+void print_line(int add_dashes = 0) {
     printf(" ");
     for (int i = 0; i < LEN; i++) {
         printf("----");
+        if (add_dashes > 0) {
+        	for(int i = 0; i < add_dashes; i++) {
+        		printf("-");
+        	}
+        }
     }
     for (int i = 0; i < NUM-1; i++) {
         printf("-");
-        if (add_dash > 0) {
-            printf("-");
-        }
     }
     printf("\n");
 }
 
-void print_separators() {
+void print_separators(int add_spaces = 0) {
     printf("| ");
+    if (add_spaces > 0) {
+    	for(int i = 0; i < add_spaces; i++) {
+    		printf(" ");
+    	}
+    }
     for (int i = 0; i < LEN; i++) {
         if (i % NUM == NUM-1) {
             printf("   | ");
         }
         else {
             printf("    ");
+        }
+
+        if (add_spaces > 0) {
+        	for(int i = 0; i < add_spaces; i++) {
+        		printf(" ");
+        	}
         }
     }
     printf("\n");
@@ -90,6 +103,51 @@ void print_spaces(int num) {
 }
 
 void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+    int offset = (int) LEN/2;
+
+    printf("\nCandidate State: \n");
+    print_line(5);
+
+    for (int row = 0; row < LEN; row++) {
+		printf("|"); // Print the left box line
+		for (int col = 0; col < LEN; col++) {
+			// print candidates if cell not yet solved
+			if (board[row][col] == 0) {
+				for (int ind = 0; ind < LEN; ind++) {
+					if (candidates[row][col][ind] == 1) {
+						printf("%d", ind + 1);
+					}
+					else {
+						printf("-");
+					}
+				}
+			}
+			// Print solved values
+			else {
+				print_spaces(offset);
+				printf("%d", board[row][col]);
+				print_spaces(LEN - 1 - offset);
+			}
+
+			if (col % NUM == NUM - 1) { // Separate boxes with a line
+				printf("|");
+			}
+			// else {
+			// 	printf(" ");
+			// }
+		}
+		printf("\n"); // Start a new line
+
+		if (row % NUM == NUM - 1) {
+			print_line(5);
+		}
+		else {
+			print_separators(5);
+		}
+	}
+}
+
+void display_candidates_in_multiple_rows(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     int ind_start;
     int offset = (int) NUM/2;
 
@@ -145,9 +203,6 @@ void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         if (row % NUM == NUM - 1) {
             print_line(1);
         }
-//        else {
-//        	print_separators();
-//        }
     }
 }
 

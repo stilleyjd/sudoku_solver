@@ -84,16 +84,19 @@ int main()
     // Main loop
     while (board_stats.num_empty_cells > 0) {
 
+		#ifdef PRINT_DEBUG
     	// Finish up the previous round
     	if (round > 0) {
     		// Display the results from last round
             if (LEN < 10) {
                 display_candidates(board, candidates);
             }
+
     		printf("Previous number of cells completed: %d\n", num_cells_completed);
             num_cells_completed = LEN*LEN - board_stats.num_empty_cells; // Update number completed for next round
     		printf("Round %d: number of cells completed: %d\n\n", round, num_cells_completed);
     	}
+		#endif
 
     	// Prepare for the next round
     	round++;
@@ -126,9 +129,11 @@ int main()
                 printf("Failed too many times. Giving up...\n");
                 break;
             }
+			#ifdef PRINT_DEBUG
             else {
                 printf("Resetting board back to last deterministic state.\n");
             }
+			#endif
 
             // Reset the board and counters, then start over
             memcpy(board, det_board, sizeof(board));
@@ -139,8 +144,10 @@ int main()
         }
 
         // Hidden Singles
+		#ifdef PRINT_DEBUG
 		printf("\nNo new cells could be solved in the last iteration.\n"
 				"    Trying Hidden Singles Search\n");
+		#endif
 		num_cells_found = hidden_single_search(board, candidates);
 		board_stats.hidden_single += num_cells_found;
 		board_stats.num_empty_cells -= num_cells_found;
@@ -149,28 +156,22 @@ int main()
 		}
 
         // Locked Candidate
+		#ifdef PRINT_DEBUG
 		printf("\nNo new cells could be solved using Hidden Singles.\n"
 				"    Trying a Locked Candidate Search...\n");
+		#endif
 		num_eliminations = locked_candidate_search(candidates);
 		board_stats.locked_candidate += num_eliminations;
 		if (num_eliminations > 0) {
 			continue;  // If locked candidates did something, give previous techniques another chance
 		}
 
+		#ifdef PRINT_DEBUG
         // If made it this far, then display candidate values for next algorithms (and if puzzle is not too big...)
         if (LEN < 10) {
             display_candidates(board, candidates);
         }
-
-
-        // TODO??: More advanced techniques like X-wing, Sword fish, XY Wing
-        //   https://www.learn-sudoku.com/advanced-techniques.html
-		printf("    Trying a X-Wing Search...\n");
-		num_eliminations = x_wing_search(candidates);
-		board_stats.x_wing += num_eliminations;
-		if (num_eliminations > 0) {
-			continue;  // If this search did something, give previous techniques another chance
-		}
+		#endif
 
 
         // Naked/Hidden Sets. Includes:
@@ -181,7 +182,9 @@ int main()
 		num_hidden = 0;
 
         // Pairs
+		#ifdef PRINT_DEBUG
 		printf("    Trying a Naked/Hidden Pairs Search...\n");
+		#endif
 		naked_hidden_sets_search(candidates, 2, &num_naked, &num_hidden);
 		board_stats.naked_pairs += num_naked;
 		board_stats.hidden_pairs += num_hidden;
@@ -189,15 +192,31 @@ int main()
 			continue; // If naked / hidden pairs did something, give previous techniques another chance
 		}
 		// Triples
+		#ifdef PRINT_DEBUG
 		printf("    Trying a Naked/Hidden Triples Search...\n");
+		#endif
 		naked_hidden_sets_search(candidates, 3, &num_naked, &num_hidden);
 		board_stats.naked_triples += num_naked;
 		board_stats.hidden_triples += num_hidden;
 		if (num_naked + num_hidden > 0) {
 			continue; // If naked / hidden triplets did something, give previous techniques another chance
 		}
+
+        // X-Wing
+		#ifdef PRINT_DEBUG
+		printf("    Trying a X-Wing Search...\n");
+		#endif
+		num_eliminations = x_wing_search(candidates);
+		board_stats.x_wing += num_eliminations;
+		if (num_eliminations > 0) {
+			continue;  // If this search did something, give previous techniques another chance
+		}
+
+		// More Naked/Hidden Sets (once that help less often...)
 		// Quads
+		#ifdef PRINT_DEBUG
 		printf("    Trying a Naked/Hidden Quadruples Search...\n");
+		#endif
 		naked_hidden_sets_search(candidates, 4, &num_naked, &num_hidden);
 		board_stats.naked_quads += num_naked;
 		board_stats.hidden_quads += num_hidden;
@@ -205,7 +224,9 @@ int main()
 			continue; // If naked / hidden quads did something, give previous techniques another chance
 		}
 		// Quints // TODO: Remove this?  Hasn't actually helped yet...
+		#ifdef PRINT_DEBUG
 		printf("    Trying a Naked/Hidden Quintuples Search...\n");
+		#endif
 		naked_hidden_sets_search(candidates, 5, &num_naked, &num_hidden);
 		board_stats.naked_quints += num_naked;
 		board_stats.hidden_quints += num_hidden;
@@ -213,11 +234,22 @@ int main()
 			continue; // If naked / hidden quints did something, give previous techniques another chance
 		}
 
-
+	    // TODO: More advanced techniques like Sword fish, XY Wing
+		//   https://www.learn-sudoku.com/advanced-techniques.html
+//		#ifdef PRINT_DEBUG
+//		printf("    Trying a X-Wing Search...\n");
+//		#endif
+//		num_eliminations = x_wing_search(candidates);
+//		board_stats.x_wing += num_eliminations;
+//		if (num_eliminations > 0) {
+//			continue;  // If this search did something, give previous techniques another chance
+//		}
 
         // Finally, try a Brute Force technique
+		#ifdef PRINT_DEBUG
 		printf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying randomized solution for a cell...\n");
+		#endif
 		// TODO: Make this more systematic than random (like step through candidates instead)
 		num_cells_found = randomized_value_board_search(board, candidates);
 		board_stats.num_empty_cells -= num_cells_found;
@@ -290,7 +322,7 @@ int main()
 		printf("  Hidden Quintuples: %d\n", board_stats.hidden_quints);
         difficulty = 3;
     }
-    if (board_stats.x_wing >= 0) {
+    if (board_stats.x_wing > 0) {
 		printf("  X-Wing: %d\n", board_stats.x_wing);
         difficulty = 3;
     }

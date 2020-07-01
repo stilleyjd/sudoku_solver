@@ -11,24 +11,24 @@
 // #define FILENAME "P2.txt"  // Hard: Naked & hidden singles, locked candidates, and naked pairs
 // #define FILENAME "P8.txt"  // Hard: Naked & hidden singles, locked candidates, and naked & hidden pairs
 // #define FILENAME "P10.txt" // Hard: Naked & hidden singles, locked candidates, and naked triplets
-// #define FILENAME "P5.txt"  // Very hard: Naked & hidden singles, locked candidates, naked & hidden pairs, and x-wing
-// #define FILENAME "P11.txt" // Hard: Naked & hidden singles, and x-wing
+// #define FILENAME "P5.txt"  // Very hard: Naked & hidden singles, locked candidates, naked & hidden pairs & triples, and x-wing
 
-// #define FILENAME "P17.txt" // Very hard: 2 random + Naked & hidden singles, locked candidates, and naked pairs
 
 // Still need random number
 // #define FILENAME "P7.txt"  // Very hard: 1 random + Naked & hidden singles, locked candidates, and naked & hidden pairs
+// #define FILENAME "P11.txt" // Very hard: 2 random + Naked & hidden singles & pairs & triples & quads
 // #define FILENAME "P12.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and naked & hidden pairs and triples
-// #define FILENAME "P13.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and hidden pairs and triples, and x-wing
+// #define FILENAME "P13.txt" // Very hard: 1 random + Naked & hidden singles, locked candidates, and hidden pairs & triples, and x-wing
+// #define FILENAME "P17.txt" // Very hard: 2 random + Naked & hidden singles, locked candidates, and naked pairs
 // #define FILENAME "P14.txt" // Extremely hard: 2 random + Naked & hidden singles, locked candidates, hidden pairs, and naked quints (5)
-#define FILENAME "P19.txt" // Extremely hard: 3 random + Naked & hidden singles, locked candidates, naked & hidden pairs, and naked quints (5)
+// #define FILENAME "P19.txt" // Extremely hard: 3 random + Naked & hidden singles, locked candidates, naked & hidden pairs, and naked quints (5)
 // #define FILENAME "P15_Hardest.txt" // Evil!: 5 random + Naked & hidden singles, locked candidates, and naked & hidden pairs, triples, and quads (4)
-// #define FILENAME "P18.txt"  //        Evil!: 6 random + Naked & hidden singles, locked candidates, and naked & hidden pairs, and quads (4)
+#define FILENAME "P18.txt"  //        Evil!: 6 random + Naked & hidden singles, locked candidates, and naked & hidden pairs, and quads (4)
 
 // #define FILENAME "P19.txt"
 
 
-// 16 x 16 Puzzles
+// 16 x 16 Puzzles - Also need to change NUM and LEN Board Globals!
 //#define FILENAME "P16x16-1.txt" // Medium: Solved with naked & hidden singles and locked candidates
 
 
