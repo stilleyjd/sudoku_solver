@@ -13,6 +13,9 @@ References:
 #include "algorithms.h"
 #include "read_and_display.h"
 
+#define MAX_FISH_SIZE 4
+
+
 int sum_ints(int L, int x[]) {
     int sum = 0;
     for (int i = 0; i < L; i++) { 
@@ -891,18 +894,18 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 							c = spots[n];
 							if (candidates[v][c][i] == 1) {
 								candidates[v][c][i] = 0;
-								#ifdef PRINT_DEBUG
+//								#ifdef PRINT_DEBUG
 								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, v+1, c+1);
-								#endif
+//								#endif
 								num_removed++;
 							}
 						} // spot
 					} // row
 
 					if (num_removed > 0) {
-						#ifdef PRINT_DEBUG
+//						#ifdef PRINT_DEBUG
 						printf("X-Wing found for value of %d, in rows %d & %d, columns %d & %d\n", i+1, vector1+1, vector2+1, spots[0]+1, spots[1]+1);
-						#endif
+//						#endif
 						num_occurances++;
 						return num_occurances;
 					}
@@ -952,18 +955,18 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 							r = spots[vector2];
 							if (candidates[r][v][i] == 1) {
 								candidates[r][v][i] = 0;
-								#ifdef PRINT_DEBUG
+//								#ifdef PRINT_DEBUG
 								printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i + 1, r + 1, v + 1);
-								#endif
+//								#endif
 								num_removed++;
 							}
 						} // spot
 					} // col
 
 					if (num_removed > 0) {
-						#ifdef PRINT_DEBUG
+//						 #ifdef PRINT_DEBUG
 						printf("X-Wing found for value of %d, in columns %d & %d, rows %d & %d\n", i + 1, vector1 + 1, vector2 + 1, spots[0] + 1, spots[1] + 1);
-						#endif
+//						 #endif
 						num_occurances++;
 						return num_occurances;
 					}
@@ -977,7 +980,172 @@ int x_wing_search(int candidates[LEN][LEN][LEN]) {
 	return num_occurances;
 }
 
-int fish_searches(int candidates[LEN][LEN][LEN], int fish_size) {
+int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int combo[]) {
+
+	int i, m, n;
+	int c, r;
+	int num, sum;
+	int spots[MAX_FISH_SIZE] = { 0 };
+	int potential_fish, skip;
+	int num_removed = 0;
+	int num_occurances = 0;
+
+	// Loop through all numbers
+	for (i = 0; i < LEN; i++ ) {
+
+		// A: check rows
+		num = 0;
+		potential_fish = 1;
+		for (m=0; m < LEN; m++) { // check every column to see if candidate for spots
+			sum = 0;
+			for (n = 0; n < fish_size; n++) {
+				sum += candidates[combo[n]][m][i];
+			}
+
+			// if only only 1 row has this candidate, then cannot be a fish
+			if (sum == 1) {
+				potential_fish = 0;
+				break;
+			}
+			// if there are at least 2 candidates, add as potential spot for this combo
+			else { // if (sum >= 2 && sum <= fish_size) {
+				if (num >= fish_size) {
+					potential_fish = 0; // If too many columns with this combo, stop checking
+					break;
+				}
+				spots[num] = m;
+				num++;
+			}
+		}
+
+		// If fish_size number of spots were found, and it is a potential fish
+		if (num == fish_size && potential_fish == 1) {
+			printf("Checking potential fish combo for value %d of: ", i+1);
+			for (n = 0; n < fish_size; n++){
+				printf("%d, ", combo[n] + 1);
+			}
+			printf("%d", combo[fish_size-1] + 1);
+
+			// try to eliminate candidates in other rows based on spots
+			for (m = 0; m < LEN; m++) {  // rows
+
+				// skip row if in combo
+				skip = 0;
+				for (n = 0; n < fish_size; n++) {
+					if (m == combo[n]) {
+						skip = 1;
+						break;
+					}
+				}
+				if (skip == 1) { continue; }
+
+				// Otherwise, see if this value is a candidate at spots in the row
+				for (n = 0; n < fish_size; n++) {
+					c = spots[n];
+					if (candidates[m][c][i] == 1) {
+						candidates[m][c][i] = 0;
+	//					 #ifdef PRINT_DEBUG
+						printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, m+1, c+1);
+	//					 #endif
+						num_removed++;
+					}
+				} // spot
+			} // row
+
+			if (num_removed > 0) {
+	//			 #ifdef PRINT_DEBUG
+				printf("Fish of size %d found for value of %d, in rows: ", fish_size, i+1);
+				for (n = 0; n < fish_size; n++){
+					printf("%d, ", combo[n] + 1);
+				}
+				printf("%d; columns: ", combo[fish_size-1] + 1);
+				for (n = 0; n < fish_size; n++){
+					printf("%d, ", spots[n] + 1);
+				}
+				printf("%d.\n", spots[fish_size-1] + 1);
+	//			 #endif
+				num_occurances++;
+				return num_occurances;
+			}
+		} // rows
+
+		// B: check columns
+		num = 0;
+		memset(spots, 0, sizeof(spots));
+		potential_fish = 1;
+		for (m=0; m < LEN; m++) { // check every row to see if candidate for spots
+			sum = 0;
+			for (n = 0; n < fish_size; n++) {
+				sum += candidates[m][combo[n]][i];
+			}
+
+			// if only only 1 column in combo has this candidate, then cannot be a fish
+			if (sum == 1) {
+				potential_fish = 0;
+				break;
+			}
+			// if there are at least 2 candidates, add as potential spot for this combo
+			else { // if (sum >= 2 && sum <= fish_size) {
+				if (num >= fish_size) {
+					potential_fish = 0; // If too many rows with this combo, stop checking
+					break;
+				}
+				spots[num] = m;
+				num++;
+			}
+		}
+
+		// If fish_size number of spots were found, and it is a potential fish
+		if (num == fish_size && potential_fish == 1) {
+			// try to eliminate candidates in other columns based on spots
+			for (m = 0; m < LEN; m++) {  // columns
+
+				// skip column if in combo
+				skip = 0;
+				for (n = 0; n < fish_size; n++) {
+					if (m == combo[n]) {
+						skip = 1;
+						break;
+					}
+				}
+				if (skip == 1) { continue; }
+
+				// Otherwise, see if this value is a candidate at spots in the column
+				for (n = 0; n < fish_size; n++) {
+					r = spots[n];
+					if (candidates[r][m][i] == 1) {
+						candidates[r][m][i] = 0;
+	//					 #ifdef PRINT_DEBUG
+						printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, m+1);
+	//					 #endif
+						num_removed++;
+					}
+				} // spot
+			} // columns
+
+			if (num_removed > 0) {
+	//			 #ifdef PRINT_DEBUG
+				printf("Fish of size %d found for value of %d, in columns: ", fish_size, i+1);
+				for (n = 0; n < fish_size; n++){
+					printf("%d, ", combo[n] + 1);
+				}
+				printf("%d; rows: ", combo[fish_size-1] + 1);
+				for (n = 0; n < fish_size; n++){
+					printf("%d, ", spots[n] + 1);
+				}
+				printf("%d.\n", spots[fish_size-1] + 1);
+	//			 #endif
+				num_occurances++;
+				return num_occurances;
+			}
+
+		}
+	}
+
+	return num_occurances;
+}
+
+int basic_fish_searches(int candidates[LEN][LEN][LEN], int fish_size) {
 	// Swordfish (Like X-wing, but looking for same value in 2-3 spots in 3 rows/columns):
 	//    https://www.learn-sudoku.com/swordfish.html
 	// Jellyfish (Like Swordfish, but looking for same value in 2-4 spots in 4 rows/columns):
@@ -986,109 +1154,56 @@ int fish_searches(int candidates[LEN][LEN][LEN], int fish_size) {
 
 	// Note: this algorithm assumes searches with smaller sizes have already been tried...
 
-	#define MAX_FISH_SIZE 4
-
 	int num_occurances = 0;
-
-	int i, n;
-	// int r, c;
-	// int v1, v2, v3, v4, vO;
-	int w, x, y, z;
-
-	int sum;
-	int num;
-	int spots[2][MAX_FISH_SIZE] = {0};
-	// int cells[LEN][MAX_FISH_SIZE];
-	int match;
-	int num_removed = 0;
+	int w = 0, x = 0, y = 0, z = 0;
+	int combo[MAX_FISH_SIZE] = { 0 };
 
 	if (fish_size > MAX_FISH_SIZE) {
 		printf("Fish size of %d is not supported!! Max size is: %d...", fish_size, MAX_FISH_SIZE);
 	}
 
-	for (i = 0; i < LEN; i++ ) {
-		// A: Search rows
-
-        // First, search through all combos of fish_size rows, and see if sum of candidates is between 2 and fish_size
-        //    If so, then it's a candidates to eliminate other cells
-
-		// TODO: Use spots like combo like in naked/hidden??
-        if (fish_size == 3) {
-			for (w = 0; w < LEN-2; w++) {
-				for (x = w+1; x < LEN-1; x++) {
-					for (y = x+1; y < LEN; y++) {
-
-						// A: check rows
-						num = 0;
-						match = 1;
-						memset(spots, 0, sizeof(spots));
-						for (n=0; n < LEN; n++) {
-
-							sum = candidates[w][n][i] + candidates[x][n][i] + candidates[y][n][i];
-							if (sum >= 2 && sum <= fish_size) {  // if there are 2-fish size candidates in this column add as spot
-								num++;
-								if (num > fish_size) {
-									match = 0;
-									break;
-								}
-								spots[0][num-1] = w;  // r
-								spots[1][num-1] = n;  // c
-								spots[0][num-1] = x;
-								spots[1][num-1] = n;
-								spots[0][num-1] = y;
-								spots[1][num-1] = n;
-							}
-						}
-						if (match == 1) {
-							num_removed = 0;  // TODO: add some function here to elimnate candidates based on spots
-							if (num_removed > 0) {
-								num_occurances++;
-								return num_occurances;
-							}
-						}
-
-						// B: check columns
-						num = 0;
-						match = 1;
-						memset(spots, 0, sizeof(spots));
-						for (n=0; n < LEN; n++) {
-							sum = candidates[n][w][i] + candidates[n][x][i] + candidates[n][y][i];
-							if (sum >= 2 && sum <= fish_size) {  // if there are 2-fish size candidates in this column add as spot
-								num++;
-								if (num > fish_size) {
-									match = 0;
-									break;
-								}
-								spots[0][num-1] = n;  // r
-								spots[1][num-1] = w;  // c
-								spots[0][num-1] = n;
-								spots[1][num-1] = x;
-								spots[0][num-1] = n;
-								spots[1][num-1] = y;
-							}
-						}
-						if (match == 1) {
-							num_removed = 0;  // TODO: add some function here to elimnate candidates based on spots
-							if (num_removed > 0) {
-								num_occurances++;
-								return num_occurances;
-							}
-						}
-
-					}
+	// Loop through of all possible combinations of rows/columns to check if a fish
+	if (fish_size == 2) {
+		for (w = 0; w < LEN-1; w++) {
+			for (x = w+1; x < LEN; x++) {
+				combo[0] = w;
+				combo[1] = x;
+//				combo[2] = y;
+//				combo[3] = z;
+				num_occurances += fish_search_for_combo(candidates, fish_size, combo);
+				if (num_occurances > 0) {
+					return num_occurances;
 				}
 			}
-		} else if (fish_size == 4) {
-			for (w = 0; w < num-3; w++) {
-				for (x = w+1; x < num-2; x++) {
-					for (y = x+1; y < num-1; y++) {
-						for (z = y+1; z < num; z++) {
-							return num_occurances;
-						}
+		}
+	}
+	else if (fish_size == 3) {
+		for (w = 0; w < LEN-2; w++) {
+			for (x = w+1; x < LEN-1; x++) {
+				for (y = x+1; y < LEN; y++) {
+					combo[0] = w;
+					combo[1] = x;
+					combo[2] = y;
+					combo[3] = z;
+					num_occurances += fish_search_for_combo(candidates, fish_size, combo);
+					if (num_occurances > 0) {
+						return num_occurances;
 					}
 				}
 			}
 		}
+	}
+//        else if (fish_size == 4) {
+//			for (w = 0; w < num-3; w++) {
+//				for (x = w+1; x < num-2; x++) {
+//					for (y = x+1; y < num-1; y++) {
+//						for (z = y+1; z < num; z++) {
+//							return num_occurances;
+//						}
+//					}
+//				}
+//			}
+//		}
 
 
 // Older attempt...
@@ -1293,7 +1408,7 @@ int fish_searches(int candidates[LEN][LEN][LEN], int fish_size) {
 //
 //		} // columns
 
-	} // i (candidate)
+	// } // i (candidate)
 
 	return num_occurances;
 }

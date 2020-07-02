@@ -203,10 +203,13 @@ int main()
 		}
 
         // X-Wing
-		#ifdef PRINT_DEBUG
+		// #ifdef PRINT_DEBUG
 		printf("    Trying a X-Wing Search...\n");
-		#endif
+		display_candidates(board, candidates);
+		// #endif
 		num_eliminations = x_wing_search(candidates);
+		// TODO: Debug why this doesn't work for P5.txt when it used to in old function...
+		// num_eliminations = basic_fish_searches(candidates, 2);
 		board_stats.x_wing += num_eliminations;
 		if (num_eliminations > 0) {
 			continue;  // If this search did something, give previous techniques another chance

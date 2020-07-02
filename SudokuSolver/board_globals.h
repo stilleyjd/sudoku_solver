@@ -1,6 +1,6 @@
 #pragma once
 
-#define PRINT_DEBUG
+// #define PRINT_DEBUG
 
 // For 9 x 9 Puzzles
 #define NUM 3
