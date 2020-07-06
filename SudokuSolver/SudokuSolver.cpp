@@ -32,6 +32,8 @@ struct BoardStats {
     int naked_quints = 0;
     int hidden_quints = 0;
     int x_wing = 0;
+    int swordfish = 0;
+    int jellyfish = 0;
     int random = 0;
 };
 
@@ -202,29 +204,27 @@ int main()
 			continue; // If naked / hidden triplets did something, give previous techniques another chance
 		}
 
+
+		// Fish Searches
         // X-Wing
-		// #ifdef PRINT_DEBUG
+		#ifdef PRINT_DEBUG
 		printf("    Trying a X-Wing Search...\n");
-		display_candidates(board, candidates);
-		// #endif
-		num_eliminations = x_wing_search(candidates);
-		// TODO: Debug why this doesn't work for P5.txt when it used to in old function...
-		// num_eliminations = basic_fish_searches(candidates, 2);
+		#endif
+		num_eliminations = basic_fish_search(candidates, 2);
 		board_stats.x_wing += num_eliminations;
 		if (num_eliminations > 0) {
 			continue;  // If this search did something, give previous techniques another chance
 		}
-
-	    // TODO: More advanced techniques like Sword fish, XY Wing
-		//   https://www.learn-sudoku.com/advanced-techniques.html
-//		#ifdef PRINT_DEBUG
-//		printf("    Trying a X-Wing Search...\n");
-//		#endif
-//		num_eliminations = x_wing_search(candidates);
-//		board_stats.x_wing += num_eliminations;
-//		if (num_eliminations > 0) {
-//			continue;  // If this search did something, give previous techniques another chance
-//		}
+	    // Swordfish (Like X-wing, but looking for same value in 2-3 spots in 3 rows/columns):
+		//    https://www.learn-sudoku.com/swordfish.html
+		#ifdef PRINT_DEBUG
+		printf("    Trying a Swordfish Search...\n");
+		#endif
+		num_eliminations = basic_fish_search(candidates, 3);
+		board_stats.swordfish += num_eliminations;
+		if (num_eliminations > 0) {
+			continue;  // If this search did something, give previous techniques another chance
+		}
 
 		// More Naked/Hidden Sets (once that help less often...)
 		// Quads
@@ -237,7 +237,7 @@ int main()
 		if (num_naked + num_hidden > 0) {
 			continue; // If naked / hidden quads did something, give previous techniques another chance
 		}
-		// Quints // TODO: Remove this?  Hasn't actually helped yet...
+		// Quints
 		#ifdef PRINT_DEBUG
 		printf("    Trying a Naked/Hidden Quintuples Search...\n");
 		#endif
@@ -248,19 +248,30 @@ int main()
 			continue; // If naked / hidden quints did something, give previous techniques another chance
 		}
 
-	    // TODO: Swordfish (Like X-wing, but looking for same value in 2-3 spots in 3 rows/columns):
-		//    https://www.learn-sudoku.com/swordfish.html
-//		#ifdef PRINT_DEBUG
-//		printf("    Trying a Swordfish Search...\n");
-//		#endif
+
+		// Jellyfish (Like X-Wing/Swordfish, but looking for same value in 2-4 spots in 4 rows/columns):
+		//    http://nanpre.adg5.com/tec_en14.html
+		#ifdef PRINT_DEBUG
+		printf("    Trying a Jellyfish Search...\n");
+		#endif
+		num_eliminations = basic_fish_search(candidates, 4);
+		board_stats.jellyfish += num_eliminations;
+		if (num_eliminations > 0) {
+			continue;  // If this search did something, give previous techniques another chance
+		}
+
+//		display_candidates(board, candidates);
+	    // TODO: More advanced techniques like XY Wing
+		//   https://www.learn-sudoku.com/advanced-techniques.html
+//		// #ifdef PRINT_DEBUG
+//		printf("    Trying a X-Wing Search...\n");
+//		// #endif
 //		num_eliminations = x_wing_search(candidates);
 //		board_stats.x_wing += num_eliminations;
 //		if (num_eliminations > 0) {
+//			display_candidates(board, candidates);
 //			continue;  // If this search did something, give previous techniques another chance
 //		}
-
-		// TODO: Jellyfish (Like Swordfish, but looking for same value in 2-4 spots in 4 rows/columns):
-		//    http://nanpre.adg5.com/tec_en14.html
 
         // Finally, try a Brute Force technique
 		#ifdef PRINT_DEBUG
@@ -332,20 +343,28 @@ int main()
     if (board_stats.naked_quads + board_stats.hidden_quads > 0) {
 		printf("  Naked Quadruples: %d\n", board_stats.naked_quads);
 		printf("  Hidden Quadruples: %d\n", board_stats.hidden_quads);
-        difficulty = 3;
+        difficulty = 4;
     }
     if (board_stats.naked_quints + board_stats.hidden_quints > 0) {
 		printf("  Naked Quintuples: %d\n", board_stats.naked_quints);
 		printf("  Hidden Quintuples: %d\n", board_stats.hidden_quints);
-        difficulty = 3;
+        difficulty = 4;
     }
     if (board_stats.x_wing > 0) {
 		printf("  X-Wing: %d\n", board_stats.x_wing);
         difficulty = 3;
     }
+    if (board_stats.swordfish > 0) {
+		printf("  Swordfish: %d\n", board_stats.swordfish);
+        difficulty = 4;
+    }
+    if (board_stats.jellyfish > 0) {
+		printf("  Jellyfish: %d\n", board_stats.jellyfish);
+        difficulty = 4;
+    }
     if (board_stats.random > 0) {
     	printf("  Random Choice:  %d\n", board_stats.random);
-        difficulty = 4;
+        difficulty = 5;
     }
 
     if (difficulty == 0) {
@@ -357,6 +376,8 @@ int main()
     } else if (difficulty == 3) {
     	printf("\nDiffucluty of Board: Very Hard \n");
     } else if (difficulty == 4) {
+    	printf("\nDiffucluty of Board: Extremely Hard \n");
+    } else if (difficulty >= 5) {
     	printf("\nDiffucluty of Board: Evil! \n");
     }
 
