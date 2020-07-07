@@ -44,13 +44,14 @@ int main()
     int candidates[LEN][LEN][LEN] = { 0 }; // Possible values for the board
     struct BoardStats board_stats;
 
+    int max_retries = 2000;
+
     int round = 0;
     int num_cells_found = 0;
     int num_cells_completed = 0;
     int num_eliminations = 0;
     int num_fails = 0;
     int double_values[2] = { -1, -1 };
-    int max_retries = 50;
 
     int num_naked = 0;
     int num_hidden = 0;
@@ -78,10 +79,11 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    std::cout << "\n\nStarting!\n";
     num_cells_completed = LEN*LEN - board_stats.num_empty_cells;
-    printf("Number of Completed Cells: %d\n", num_cells_completed);
-    printf("Number of Remaining Cells: %d\n\n", board_stats.num_empty_cells);
+    printf("\nNumber of Completed Cells: %d\n", num_cells_completed);
+    printf("Number of Remaining Cells: %d\n", board_stats.num_empty_cells);
+    printf("\n--------------------------------------------------------------------------\n");
+    printf("\nStarting!\n\n");
 
     // Main loop
     while (board_stats.num_empty_cells > 0) {

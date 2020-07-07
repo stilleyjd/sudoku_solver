@@ -1,0 +1,16 @@
+// Rating Program: dukuso's suexratt
+// Rating: 4743
+// Poster: eleven
+// Label: HardestSudokusThread-02092
+
+ 1 . . | 4 . . | . . 9 
+ . 5 6 | . . 9 | . . . 
+ . . . | . 1 . | . 6 . 
+ . 6 . | . . . | 8 . . 
+ 5 . . | . . 4 | . 9 . 
+ 9 . . | . . 5 | . 1 . 
+ . 7 . | . . . | 2 . . 
+ 6 . . | . . 1 | . 5 . 
+ . . . | 3 . . | . . .
+ 
+// From: http://forum.enjoysudoku.com/the-hardest-sudokus-new-thread-t6539.html

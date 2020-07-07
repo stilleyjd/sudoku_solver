@@ -1,0 +1,16 @@
+// Rating Program: gsf's sudoku q1
+// Rating: 99420
+// Poster: tarek
+// Label: HardestSudokusThread-00041;tarx0001;Fata_Morgana
+
+ . . . | . . . | . . 3 
+ . . 1 | . . 5 | 6 . . 
+ . 9 . | . 4 . | . 7 . 
+ . . . | . . 9 | . 5 . 
+ 7 . . | . . . | . . 8 
+ . 5 . | 4 . 2 | . . . 
+ . 8 . | . 2 . | . 9 . 
+ . . 3 | 5 . . | 1 . . 
+ 6 . . | . . . | . . . 
+
+// From: http://forum.enjoysudoku.com/the-hardest-sudokus-new-thread-t6539.html

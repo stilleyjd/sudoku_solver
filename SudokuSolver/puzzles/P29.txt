@@ -1,0 +1,16 @@
+// Rating Program: gsf's sudoku q1
+// Rating: 99432
+// Poster: eleven
+// Label: HardestSudokusThread-00209;Cheese
+
+ . 2 . | . 5 . | 7 . . 
+ 4 . . | 1 . . | . . 6 
+ 8 . . | . . 3 | . . . 
+ 2 . . | . . 8 | . . 3 
+ . 4 . | . 2 . | 5 . . 
+ . . . | 6 . . | . 1 . 
+ . . 2 | . 9 . | . . . 
+ . 9 . | . . . | . . 5 
+ 7 . 4 | . . . | 9 . . 
+
+// From: http://forum.enjoysudoku.com/the-hardest-sudokus-new-thread-t6539.html

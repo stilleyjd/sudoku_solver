@@ -1,0 +1,15 @@
+ 1 2 . | 4 . . | 3 . . 
+ 3 . . | . 1 . | . 5 . 
+ . . 6 | . . . | 1 . . 
+ 7 . . | . 9 . | . . . 
+ . 4 . | 6 . 3 | . . . 
+ . . 3 | . . 2 | . . . 
+ 5 . . | . 8 . | 7 . . 
+ . . 7 | . . . | . . 5 
+ . . . | . . . | . 9 8 
+
+// From: http://forum.enjoysudoku.com/the-hardest-sudokus-new-thread-t6539.html
+// Rating Program: gsf's sudoku q1
+// Rating: 99529
+// Poster: eleven
+// Label: HardestSudokusThread-02085;Discrepancy   

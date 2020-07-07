@@ -309,11 +309,13 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         if (item == '/') {
             while (item != '\n' && item != EOF) {
                 item = fgetc(fp);
-                printf("%c", item);
+                if (item != EOF) {
+                	printf("%c", item);
+                }
             }
         }
-        // Check if space 
-        else if (item == ' ') {
+        // Check if space or divider
+        else if (item == ' ' || item == '|') {
             item = fgetc(fp);
             continue;
         }
@@ -331,7 +333,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         }
         // Finally, handle actual board values
         else {
-            if (item == '0' || item == '-') {
+            if (item == '0' || item == '-' || item == '.' ) {
                 // Check if empty value "-" or "0"
                 val = 0;
             }

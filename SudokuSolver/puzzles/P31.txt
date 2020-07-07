@@ -1,0 +1,16 @@
+// Rating Program: Nicolas Juillerat's Sudoku explainer 1.2.1
+// Rating: 11.9  (ER/EP/ED=11.9/1.2/1.2)
+// Poster: eleven
+// Label: HardestSudokusThread-00211;Imam_bayildi
+
+ . . 3 | . . 6 | . 8 . 
+ . . . | 1 . . | 2 . . 
+ . . . | . 7 . | . . 4 
+ . . 9 | . . 8 | . 6 . 
+ . 3 . | . 4 . | . . 1 
+ . 7 . | 2 . . | . . .
+ 3 . . | . . 5 | . . . 
+ . . 5 | . . . | 6 . . 
+ 9 8 . | . . . | . 5 . 
+ 
+// From: http://forum.enjoysudoku.com/the-hardest-sudokus-new-thread-t6539.html

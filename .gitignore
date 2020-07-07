@@ -339,3 +339,4 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 /SudokuSolver/tmp/read_and_display.c
+/Candidates.rtf

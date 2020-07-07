@@ -102,8 +102,10 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                 result = check_search_result(candidates[row][col]);
 
                 if (result < 0) {
+#ifdef PRINT_DEBUG
                     printf("\n\n No possible valid result for cell at row %d, column %d.\n   Cannot solve this puzzel!!!\n",
                         row + 1, col + 1);
+#endif
                     return -1;
                 }
                 else if (result != 0) {
@@ -542,7 +544,9 @@ int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
 		} // row
 
 	} else if (cnt_naked > set_size) {
-		printf("!! %d candidates found for a naked set of size %d !!!", cnt_naked, set_size);
+#ifdef PRINT_DEBUG
+		printf("!! %d candidates found for a naked set of size %d !!!\n", cnt_naked, set_size);
+#endif
 		// exit(EXIT_FAILURE);
 		return -1;
 	}

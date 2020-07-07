@@ -1,0 +1,12 @@
+ . . . . . 1 . 2 .
+ 3 . . . 4 . 5 . .
+ . . . 6 . . . . 7
+ . . 2 . . . . . 6
+ . 5 . . 3 . . 8 .
+ 4 . . . . . 9 . .
+ 9 . . . . 2 . . .
+ . 8 . . 5 . 4 . .
+ . . 1 7 . . . . .
+
+// From: http://forum.enjoysudoku.com/the-hardest-sudokus-t4212.html
+// 0: Ocean: Christmas present for gsf

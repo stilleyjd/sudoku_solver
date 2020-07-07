@@ -1,0 +1,16 @@
+// Rating Program: gsf's sudoku q2
+// Rating: 99743
+// Poster: eleven
+// Label: HardestSudokusThread-00245;Red_Dwarf
+
+ 1 2 . | 3 . . | . . 4 
+ 3 5 . | . . . | 1 . . 
+ . . 4 | . . . | . . . 
+ . . 5 | 4 . . | 2 . . 
+ 6 . . | . 7 . | . . . 
+ . . . | . . 8 | . 9 . 
+ . . 3 | 1 . . | 5 . . 
+ . . . | . . 9 | . 7 . 
+ . . . | . 6 . | . . 8 
+ 
+// From: http://forum.enjoysudoku.com/the-hardest-sudokus-new-thread-t6539.html
