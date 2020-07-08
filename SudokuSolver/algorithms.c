@@ -10,6 +10,7 @@ References:
 #include <stdio.h>
 #include <string.h>
 #include "algorithms.h"
+#include "log.h"
 
 #define MAX_SET_SIZE 5
 #define MAX_FISH_SIZE 4
@@ -96,18 +97,12 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                 result = check_search_result(candidates[row][col]);
 
                 if (result < 0) {
-#ifdef PRINT_DEBUG
-                    printf("\n\n No possible valid result for cell at row %d, column %d.\n   Cannot solve this puzzle!!!\n",
-                        row + 1, col + 1);
-#endif
+                	dbprintf("\n\n No possible valid result for cell at row %d, column %d.\n   Cannot solve this puzzle!!!\n", row + 1, col + 1);
                     return -1;
                 }
                 else if (result != 0) {
                     board[row][col] = result;
-                    // candidates[row][col] = 0;
-					#ifdef PRINT_DEBUG
-                    printf("\nFound Naked Single result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
-					#endif
+                    dbprintf("\nFound Naked Single result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
                     num_cells_completed++;
                 }
             }
@@ -184,9 +179,7 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                     num_cells_completed++;
                     // Remove candidates from this cell
                     memset(candidates[row][col], 0, sizeof(candidates[row][col]));
-					#ifdef PRINT_DEBUG
-                    printf("\nFound Hidden Singles result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
-					#endif
+                    dbprintf("\nFound Hidden Singles result for row %d, col %d: %d\n", row + 1, col + 1, board[row][col]);
                     return num_cells_completed;
                 }
             } // if cell not solved
@@ -297,10 +290,8 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
-					#ifdef PRINT_DEBUG
-					printf("Locked Candidate value of %d was only found in row %d of box %d.\n", i+1, spot_found+1, box+1);
-					printf("  This candidate value was removed from other boxes in row %d\n", spot_found+1);
-					#endif
+					dbprintf("Locked Candidate value of %d was only found in row %d of box %d.\n", i+1, spot_found+1, box+1);
+					dbprintf("  This candidate value was removed from other boxes in row %d\n", spot_found+1);
 					num_occurances++;
 					return num_occurances;
 				}
@@ -336,10 +327,8 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
-					#ifdef PRINT_DEBUG
-					printf("Locked Candidate value of %d was only found in column %d of box %d\n", i+1, spot_found+1, box+1);
-					printf("  This candidate value was removed from other boxes in column %d\n", spot_found+1);
-					#endif
+					dbprintf("Locked Candidate value of %d was only found in column %d of box %d\n", i+1, spot_found+1, box+1);
+					dbprintf("  This candidate value was removed from other boxes in column %d\n", spot_found+1);
 					num_occurances++;
 					return num_occurances;
 				}
@@ -382,10 +371,8 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
-					#ifdef PRINT_DEBUG
-					printf("Locked Candidate value of %d was only found in box %d of row %d\n", i+1, box+1, r+1);
-					printf("  This candidate value was removed from other rows in box %d\n", box+1);
-					#endif
+					dbprintf("Locked Candidate value of %d was only found in box %d of row %d\n", i+1, box+1, r+1);
+					dbprintf("  This candidate value was removed from other rows in box %d\n", box+1);
 					num_occurances++;
 					return num_occurances;
 				}
@@ -425,10 +412,8 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 				}
 
 				if (num_removed > 0) {
-					#ifdef PRINT_DEBUG
-					printf("Locked Candidate value of %d was only found in box %d of col %d\n", i+1, box+1, c+1);
-					printf("  This candidate value was removed from other columns in box %d\n", box+1);
-					#endif
+					dbprintf("Locked Candidate value of %d was only found in box %d of col %d\n", i+1, box+1, c+1);
+					dbprintf("  This candidate value was removed from other columns in box %d\n", box+1);
 					num_occurances++;
 					return num_occurances;
 				}
@@ -500,22 +485,20 @@ int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
 		for (r = row_start; r < row_end; r++) {
 			for (c = col_start; c < col_end; c++) {
 				// Skip cells it the naked set
-				skip = 0;
+				skip = false;
 				for (n = 0; n < cnt_naked; n++) {
 					if (cells_in_naked_set[0][n] == r && cells_in_naked_set[1][n] == c) {
-						skip = 1;
+						skip = true;
 						break;
 					}
 				}
-				if (skip == 1) { continue; }
+				if (skip == true) { continue; }
 
 				for (m = 0; m < set_size; m++) {
 					i = combo[m];
 					if (candidates[r][c][i] == 1) {
 						candidates[r][c][i] = 0;
-						#ifdef PRINT_DEBUG
-						printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
-						#endif
+						dbprintf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
 						num_removed++;
 					}
 				}
@@ -523,10 +506,7 @@ int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
 		} // row
 
 	} else if (cnt_naked > set_size) {
-#ifdef PRINT_DEBUG
-		printf("!! %d candidates found for a naked set of size %d !!!\n", cnt_naked, set_size);
-#endif
-		// exit(EXIT_FAILURE);
+		dbprintf("!! %d candidates found for a naked set of size %d !!!\n", cnt_naked, set_size);
 		return -1;
 	}
 
@@ -550,23 +530,21 @@ int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
 		for (n = 0; n < cnt_hidden; n++) {
 			for (i = 0; i < LEN; i++) {
 				// Skip values in the current combo
-				skip = 0;
+				skip = false;
 				for (m = 0; m < set_size; m++) {
 					if (i == combo[m]) {
-						skip = 1;
+						skip = true;
 						break;
 					}
 				}
-				if (skip == 1) { continue; }
+				if (skip == true) { continue; }
 
 				// Otherwise, remove the value
 				r = cells_in_hidden_set[0][n];
 				c = cells_in_hidden_set[1][n];
 				if (candidates[r][c][i] == 1) {
 					candidates[r][c][i] = 0;
-					#ifdef PRINT_DEBUG
-					printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
-					#endif
+					dbprintf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, c+1);
 					num_removed++;
 				}
 			} // col
@@ -746,14 +724,10 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 		result = naked_and_hidden_for_house(candidates, set_size, house, house + 1, 0, LEN);
 		if (result == 1) {
 			*num_naked += 1;
-			#ifdef PRINT_DEBUG
-			printf("  These values were removed as candidates from other cells in row %d\n\n", house + 1);
-			#endif
+			dbprintf("  These values were removed as candidates from other cells in row %d\n\n", house + 1);
 		} else if (result == 2) {
 			*num_hidden += 1;
-			#ifdef PRINT_DEBUG
-			printf("  All other candidates were removed from the cells with these values in row %d\n\n", house + 1);
-			#endif
+			dbprintf("  All other candidates were removed from the cells with these values in row %d\n\n", house + 1);
 		}
 
 		 if (result > 0) {
@@ -766,14 +740,10 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 		result = naked_and_hidden_for_house(candidates, set_size, 0, LEN, house, house + 1);
 		if (result == 1) {
 			*num_naked += 1;
-			#ifdef PRINT_DEBUG
-			printf("  These values were removed as candidates from other cells in column %d\n\n", house + 1);
-			#endif
+			dbprintf("  These values were removed as candidates from other cells in column %d\n\n", house + 1);
 		} else if (result == 2) {
 			*num_hidden += 1;
-			#ifdef PRINT_DEBUG
-			printf("  All other candidates were removed from the cells with these values in column %d\n\n", house + 1);
-			#endif
+			dbprintf("  All other candidates were removed from the cells with these values in column %d\n\n", house + 1);
 		}
 
 		 if (result > 0) {
@@ -789,14 +759,10 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 		result = naked_and_hidden_for_house(candidates, set_size, row_start, row_start+NUM, col_start, col_start+NUM);
 		if (result == 1) {
 			*num_naked += 1;
-			#ifdef PRINT_DEBUG
-			printf("  These values were removed as candidates from other cells in box %d\n\n", house + 1);
-			#endif
+			dbprintf("  These values were removed as candidates from other cells in box %d\n\n", house + 1);
 		} else if (result == 2) {
 			*num_hidden += 1;
-			#ifdef PRINT_DEBUG
-			printf("  All other candidates were removed from the cells with these values in box %d\n\n", house + 1);
-			#endif
+			dbprintf("  All other candidates were removed from the cells with these values in box %d\n\n", house + 1);
 		}
 
 		 if (result > 0) {
@@ -812,6 +778,7 @@ int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int comb
 	int i, m, n;
 	int c, r;
 	int vect = 0; // 0: rows, 1: columns
+	enum {row, col};
 #ifdef PRINT_DEBUG
 	char vector[2][8] = {"rows", "columns"};
 	char fish_type[3][10] = {"X-Wing", "Swordfish", "Jellyfish"};
@@ -828,14 +795,14 @@ int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int comb
 		// check both by all vectors (rows & columns)
 		for (vect = 0; vect < 2; vect++) {
 			num = 0;
-			potential_fish = 1;
+			potential_fish = true;
 			num_removed = 0;
 
 			// check every column/row to see if it had candidates for spots
 			for (m=0; m < LEN; m++) {
 				sum = 0;
 				for (n = 0; n < fish_size; n++) {
-					if (vect == 0) { // if checking rows
+					if (vect == row) { // if checking rows
 						sum += candidates[combo[n]][m][i];
 					} else { // if checking columns
 						sum += candidates[m][combo[n]][i];
@@ -844,13 +811,13 @@ int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int comb
 
 				// if only only 1 row has this candidate, then cannot be a fish
 				if (sum == 1) {
-					potential_fish = 0;
+					potential_fish = false;
 					break;
 				}
 				// if there are at least 2 candidates, add as potential spot for this combo
 				else if (sum >= 2) {  // && sum <= fish_size) {
 					if (num >= fish_size) {
-						potential_fish = 0;  // If too many columns with this combo, stop checking
+						potential_fish = false;  // If too many columns with this combo, stop checking
 						break;
 					}
 					spots[num] = m;
@@ -858,7 +825,7 @@ int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int comb
 				}
 			}
 			// If not a fish OR the number of spots not fish size, then move on
-			if (potential_fish == 0 || num != fish_size) {
+			if (potential_fish == false || num != fish_size) {
 				continue;
 			}
 
@@ -866,51 +833,47 @@ int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int comb
 			for (n = 0; n < fish_size; n++) {  // each vector (row/col)
 				sum = 0;
 				for (m = 0; m < fish_size; m++) {  // spots
-					if (vect == 0) { // if checking rows
+					if (vect == row) { // if checking rows
 						sum += candidates[combo[n]][spots[m]][i];
 					} else {
 						sum += candidates[spots[m]][combo[n]][i];
 					}
 				}
 				if (sum < 2) {  // If a combo row is lacking this value, not a valid fish...
-					potential_fish = 0;
+					potential_fish = false;
 					break;
 				}
 			}
-			if (potential_fish == 0) {
+			if (potential_fish == false) {
 				continue;
 			}
 
 			// If still a potential fish, eliminate candidates in other rows based on spots (if any)
 			for (n = 0; n < LEN; n++) {  // vectors
 				// skip row / column if in combo
-				skip = 0;
+				skip = false;
 				for (m = 0; m < fish_size; m++) {
 					if (n == combo[m]) {
-						skip = 1;
+						skip = true;
 						break;
 					}
 				}
-				if (skip == 1) { continue; }
+				if (skip == true) { continue; }
 
 				// Otherwise, see if this value is a candidate at spots in the row
 				for (m = 0; m < fish_size; m++) {
-					if (vect == 0) { // if checking by rows
+					if (vect == row) { // if checking by rows
 						c = spots[m];
 						if (candidates[n][c][i] == 1) {
 							candidates[n][c][i] = 0;
-							#ifdef PRINT_DEBUG
-							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, n+1, c+1);
-							#endif
+							dbprintf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, n+1, c+1);
 							num_removed++;
 						}
 					} else { // if checking by columns
 						r = spots[m];
 						if (candidates[r][n][i] == 1) {
 							candidates[r][n][i] = 0;
-							#ifdef PRINT_DEBUG
-							printf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, n+1);
-							#endif
+							dbprintf("  Candidate value of %d was removed from cell at row %d, col %d\n", i+1, r+1, n+1);
 							num_removed++;
 						}
 					}
@@ -1024,7 +987,7 @@ int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][
     int col_min = -1;
     int num_missing_min = LEN;
     int candidate_values_min[LEN] = { 0 };
-    int rand_val = 0;
+    int rand_val;
     
     for (row = 0; row < LEN; row++) {
         for (col = 0; col < LEN; col++) {
@@ -1064,9 +1027,7 @@ int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][
                 result = rand_val + 1;
             }
         }
-		#ifdef PRINT_DEBUG
-        printf("\nSelected a result of %d\n\n", result);
-		#endif
+        dbprintf("\nSelected a result of %d\n\n", result);
         board[row_min][col_min] = result;
         // NOTE: don't clear the candidate values, since it's good to keep track of these for the future
         num_cells_completed++;

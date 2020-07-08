@@ -7,4 +7,4 @@ void display_board(int board[LEN][LEN]);
 
 void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]);
 
-int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]);
+int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char file_name[MAX_FILENAME_SIZE]);

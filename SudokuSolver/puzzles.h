@@ -31,7 +31,7 @@
 // #define FILENAME "P18.txt" // Evil!: 6 random + Naked & hidden singles, locked candidates, and naked & hidden pairs & quads(4)
 // #define FILENAME "P30.txt" // Evil!: 6 random + Naked & hidden singles, locked candidates, naked pairs & triples & quads(4) & quints(5)
 // #define FILENAME "P21.txt" // Evil!: 7 random + Naked & hidden singles, locked candidates, naked & hidden pairs & triples, and Swordfish(3) (2x)
-#define FILENAME "P26.txt" // Evil!: 7 random + Naked & hidden singles, locked candidates, naked & hidden pairs & triples & quads(4), and X-Wing (2x) & Swordfish
+// #define FILENAME "P26.txt" // Evil!: 7 random + Naked & hidden singles, locked candidates, naked & hidden pairs & triples & quads(4), and X-Wing (2x) & Swordfish
 // #define FILENAME "P22.txt" // Evil!: 7 random + Naked & hidden singles, locked candidates, naked & hidden pairs & triples & quints(5), and X-Wing
 // #define FILENAME "P27.txt" // Evil!: 7 random + Naked & hidden singles, locked candidates, and naked & hidden pairs & triples & quads(4) & quints(5)
 // #define FILENAME "P33.txt" // Evil!: 8 random + Naked & hidden singles, locked candidates, hidden pairs, naked pairs & triples & quads(4)

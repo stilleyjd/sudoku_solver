@@ -1,6 +1,12 @@
 #pragma once
 
-// #define PRINT_DEBUG
+/* Don't change!! */
+typedef enum {false=0, true=1} bool;  // Don't assume C99
+#define MAX_FILENAME_SIZE 25
+
+
+/* Configurable for runtime */
+// #define PRINT_DEBUG  // If defined, prints debug messages
 
 // For 9 x 9 Puzzles
 #define NUM 3

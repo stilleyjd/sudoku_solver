@@ -8,8 +8,7 @@
 #include "puzzles.h"
 #include "read_and_display.h"
 
-// #define _CRT_SECURE_NO_DEPRECATE
-// #include <iostream>
+// #define _CRT_SECURE_NO_DEPRECATE  // For Visual Studio
 
 
 // NOTE! These are now defined in puzzels.h
@@ -235,7 +234,19 @@ void correct_path_name(char buff[]) {
 
 }
 
-int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+FILE* build_and_check_path_name(char dir_name[], char file_name[], char path_name[]) {
+	FILE* fpt = NULL;
+
+    snprintf(path_name, FILENAME_MAX, "%s\\puzzles\\%s.txt", dir_name, file_name);  // build file path
+    fpt = fopen(path_name, "r");
+
+	if (fpt == NULL) {
+		printf("Error while opening the file '%s'\n ", path_name);
+	}
+	return fpt;
+}
+
+int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char file_name[MAX_FILENAME_SIZE]) {
     /* This program populates the initial board values from a .txt file
     The .txt file should have all values in 9 rows and 9 columns
     Empty spaces should be specified by either "-" or "0" (spaces are ignored)
@@ -243,8 +254,9 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     */
 
     char item;
-    char file_name[25];
-    char dir_name[FILENAME_MAX - sizeof(file_name)];
+    char input[256];
+    // char file_name[25];
+    char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE];
     char path_name[FILENAME_MAX];
     int attempts = 0;
     int row = 0;
@@ -259,42 +271,41 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
     //    http://www.cplusplus.com/forum/windows/187372/ 
 
+    // Figure out the dir_name...
 	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
-    GetCurrentDirectoryA(FILENAME_MAX - sizeof(file_name), dir_name);
+    GetCurrentDirectoryA(FILENAME_MAX - MAX_FILENAME_SIZE, dir_name);
     // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
     correct_path_name(dir_name);  // TODO: Figure this out later...
-    printf("Corrected file dir: '%s'\n", dir_name);
+    printf("Corrected file directory: '%s'\n", dir_name);
 	#else
     // Workaround...
     strcpy(dir_name, PATHNAME);
-    printf("Current working dir: '%s'\n", dir_name;
+    printf("Current working directory: '%s'\n", dir_name;
 	#endif // !PATHNAME
 
-    do {
-        #ifndef FILENAME // If filename is not specified above, ask the user
-        printf("Enter the filename of the Sudoku puzzle to solve.\n");
-        scanf("%s", file_name);
-        #else
-        strcpy(file_name, FILENAME);  // For development
-        #endif // !FILENAME
+    // Then, get the file_name and build a path_name
+	#ifdef FILENAME
+    strcpy(file_name, FILENAME);  // For development, puzzle name is defined in puzzle.h
+	#endif
+    // build path_name and check if filename passed in or from puzzle.h is valid
+    fp = build_and_check_path_name(dir_name, file_name, path_name);
 
-        snprintf(path_name, sizeof(path_name), "%s\\puzzles\\%s", dir_name, file_name);  // build file path
-        fp = fopen(path_name, "r");
+    while (fp == NULL) {
+        printf("Enter the filename of the Sudoku puzzle to solve (without '.txt'): \n");
+        fgets(input, 256, stdin);
+        sscanf(input, "%s", file_name);
 
-        attempts++;
+        fp = build_and_check_path_name(dir_name, file_name, path_name);
         if (fp == NULL) {
-            printf("Error while opening the file '%s'\n ", path_name);
-
+        	attempts++;
             if (attempts > 10) {
                 printf("Too many attempts. Giving up!!\n");
                 exit(EXIT_FAILURE);
             } 
-            else {
-                printf("Try again\n");
-            }
-        }
 
-    } while (fp == NULL);
+            printf("Try again\n");
+        }
+    }
 
     // Read these in the values from the file 
     printf("\nReading in contents from: '%s'\n", path_name);
