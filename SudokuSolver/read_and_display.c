@@ -1,14 +1,15 @@
 /* This file has functions used to read in initial boards from a file and display the board state
 */
 
-#define _CRT_SECURE_NO_DEPRECATE
-#include <iostream>
+
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
 #include "board_globals.h"
 #include "puzzles.h"
 #include "read_and_display.h"
+
+// #define _CRT_SECURE_NO_DEPRECATE
+// #include <iostream>
 
 
 // NOTE! These are now defined in puzzels.h
@@ -19,7 +20,7 @@
 #include <windows.h>
 #endif
 
-void print_line(int add_dashes = 0) {
+void print_line(int add_dashes) {
     printf(" ");
     for (int i = 0; i < LEN; i++) {
         printf("----");
@@ -35,7 +36,7 @@ void print_line(int add_dashes = 0) {
     printf("\n");
 }
 
-void print_separators(int add_spaces = 0) {
+void print_separators(int add_spaces) {
     printf("| ");
     if (add_spaces > 0) {
     	for(int i = 0; i < add_spaces; i++) {
@@ -62,7 +63,7 @@ void print_separators(int add_spaces = 0) {
 void display_board(int board[LEN][LEN]) {
 
     printf("\nBoard State: \n");
-    print_line();  // Top box line
+    print_line(0);  // Top box line
 
     for (int row = 0; row < LEN; row++) {
         printf("| "); // Print the left box line
@@ -85,10 +86,10 @@ void display_board(int board[LEN][LEN]) {
 
         // Add line (if section end) or spaces and separators
         if (row % NUM == NUM - 1) {
-            print_line();  // Bottom section line
+            print_line(0);  // Bottom section line
         }
         else {
-            print_separators();
+            print_separators(0);
         }
     }
 }
@@ -153,8 +154,6 @@ void display_candidates_in_multiple_rows(int board[LEN][LEN], int candidates[LEN
 
     printf("\nCandidate State: \n");
     print_line(1);
-
-    // printf("offset: %d \n", offset);
 
     for (int row = 0; row < LEN; row++) {
         ind_start = 0;
@@ -366,7 +365,6 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
             }
 
             board[row][col] = val;
-            // printf("'%d'", val);
             col++;
         }
 
@@ -387,8 +385,6 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
         for (int col = 0; col < LEN; col++) {
             if (board[row][col] == 0) { 
                 num_empty_cells++; 
-                // candidates[row][col] = round(pow(2, LEN)) - 1
-                // memset(candidates[row][col], 1, sizeof(candidates[row][col])); -- didn't work...
                 for (int i = 0; i < LEN; i++) {
                     candidates[row][col][i] = 1;
                 }

@@ -9,9 +9,10 @@ Note: some of techniques here come from:
  - The brute force (randomized value) search was also independently created by the developer.
 */
 
-#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <time.h>
-#include <cstring>
 #include "board_globals.h"
 #include "read_and_display.h"
 #include "algorithms.h"
@@ -19,30 +20,30 @@ Note: some of techniques here come from:
 
 
 struct BoardStats {
-    int num_empty_cells = LEN * LEN;
-    int naked_single = 0;
-    int hidden_single = 0;
-    int locked_candidate = 0;
-    int naked_pairs = 0;
-    int hidden_pairs = 0;
-    int naked_triples = 0;
-    int hidden_triples = 0;
-    int naked_quads = 0;
-    int hidden_quads = 0;
-    int naked_quints = 0;
-    int hidden_quints = 0;
-    int x_wing = 0;
-    int swordfish = 0;
-    int jellyfish = 0;
-    int random = 0;
+    int num_empty_cells;
+    int naked_single;
+    int hidden_single;
+    int locked_candidate;
+    int naked_pairs;
+    int hidden_pairs;
+    int naked_triples;
+    int hidden_triples;
+    int naked_quads;
+    int hidden_quads;
+    int naked_quints;
+    int hidden_quints;
+    int x_wing;
+    int swordfish;
+    int jellyfish;
+    int random;
 };
 
 
-int main()
-{
+int main() {
+
     int board[LEN][LEN] = { 0 }; // Initial board state
     int candidates[LEN][LEN][LEN] = { 0 }; // Possible values for the board
-    struct BoardStats board_stats;
+    struct BoardStats board_stats = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     int max_retries = 2000;
 
@@ -71,6 +72,8 @@ int main()
 
     // Setup board
     board_stats.num_empty_cells = get_initial_values(board, candidates);
+    // Init other board stats
+
 
     // Check to make sure that each row, col, and box only has 1 - 9 once
     check_for_double_values(board, double_values);

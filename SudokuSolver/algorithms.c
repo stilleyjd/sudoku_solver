@@ -6,12 +6,10 @@ References:
         http://www.geometer.org/mathcircles/sudoku.pdf.
 */
 
-#include <iostream>
 #include <stdlib.h>
-#include <math.h>
-#include <cstring>
+#include <stdio.h>
+#include <string.h>
 #include "algorithms.h"
-#include "read_and_display.h"
 
 #define MAX_SET_SIZE 5
 #define MAX_FISH_SIZE 4
@@ -59,7 +57,6 @@ int check_search_result(int candidate_values[LEN]) {
         {
             // If only 1 possible value, the solution must that
             if (candidate_values[i] == 1) {
-                // printf("Found a result of: %d ", i + 1);
                 return i + 1;  // account for 0-based indexes...
             }
         }
@@ -79,18 +76,15 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
     for (row = 0; row < LEN; row++) {
         for (col = 0; col < LEN; col++) {
             if (board[row][col] == 0) {
-                // printf("\Naked Single search for results to: row %d, col %d\n", row+1, col+1);
 
                 // 1st, look through the same row
                 for (c = 0; c < LEN; c++) {
                 	naked_single_elim_candidate(board, row, c, candidates[row][col]);
                 }
-
                 // 2nd, look through the same column
                 for (r = 0; r < LEN; r++) {
                 	naked_single_elim_candidate(board, r, col, candidates[row][col]);
                 }
-
                 // 3rd, check the NUM*NUM box it is in
                 for (r = (row / NUM) * NUM; r < (row / NUM + 1) * NUM; r++) {
                     for (c = (col / NUM) * NUM; c < (col / NUM + 1) * NUM; c++) {
@@ -103,7 +97,7 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
 
                 if (result < 0) {
 #ifdef PRINT_DEBUG
-                    printf("\n\n No possible valid result for cell at row %d, column %d.\n   Cannot solve this puzzel!!!\n",
+                    printf("\n\n No possible valid result for cell at row %d, column %d.\n   Cannot solve this puzzle!!!\n",
                         row + 1, col + 1);
 #endif
                     return -1;
@@ -446,21 +440,6 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 }
 
 
-int factorial(int n) {
-	int result = 1;
-	int i;
-
-	if (n < 2) {
-		return result;
-	}
-
-	for (i = 1; i <= n; i++) {
-		result = result * i;
-	}
-	return result;
-}
-
-
 int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
 		int row_start, int row_end, int col_start, int col_end, int combo[]) {
 
@@ -619,10 +598,13 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	 * 		Otherwise, returns 0.
 	 */
 
-	// int num_removed = 0;
 	int i, r, c;
+	int a, b, d, e;
 	int num = 0, sum = 0;
 	int values[LEN] = { 0 };
+	int combo[MAX_SET_SIZE] = { 0 };
+	int result;
+
 
 	if (set_size > MAX_SET_SIZE) {
 		printf("Invalid set size: %d!!", set_size);
@@ -649,26 +631,12 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 			num++;
 		}
 	}
-
 	// Quit if number of values is less than set_size
 	if (num < set_size) {
 		return 0;
 	}
 
-
-    // Create an array of all possible combinations to loop though
-	// determine number of possible unique combinations with no repeats (Unordered Sampling without Replacement)
-	//		n!/(k!*(n-k)!),   where n = num, k = set_size
-	//    See: https://www.probabilitycourse.com/chapter2/2_1_3_unordered_without_replacement.php
-	
-	// Set up variables used by the rest of the function
-	int a, b, d, e;
-	int combo[MAX_SET_SIZE] = { 0 };
-	int result;
-
-
-	// TODO: could this be one loop/algorithm instead?
-	// n = 0;
+	// Otherwise, loop through all possible unique combination of values
 	if (set_size == 2) {
 		for (a = 0; a < num-1; a++) {
 			for (b = a+1; b < num; b++) {
@@ -736,10 +704,6 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 			}
 		}
 	}
-//	else {
-//		printf("Naked/Hidden Set: Invalid set_size: %d !!!", set_size);
-//		return -1;
-//	}
 
 	return 0;
 }

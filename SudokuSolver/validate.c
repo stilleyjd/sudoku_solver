@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdio.h>
 #include "validate.h"
 
 void check_area(int board[LEN][LEN], int row_start, int row_end, int col_start, int col_end, int double_coords[]) {
@@ -9,7 +9,6 @@ void check_area(int board[LEN][LEN], int row_start, int row_end, int col_start, 
     for (r = row_start; r < row_end; r++) {
         for (c = col_start; c < col_end; c++) {
             value = &board[r][c];
-            // printf("Checking value at row %d, col %d: %d\n", r + 1, c + 1, board[r][c]);
 
             if (*value > 0) {
                 found_values[*value - 1]++;
