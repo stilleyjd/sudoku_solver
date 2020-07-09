@@ -16,9 +16,11 @@ References:
 #define MAX_FISH_SIZE 4
 
 
-int sum_ints(int L, int x[]) {
-    int sum = 0;
-    for (int i = 0; i < L; i++) { 
+short sum_inds(short L, short x[]) {
+	short i;
+	short sum = 0;
+
+    for (i = 0; i < L; i++) {
         sum = sum + x[i]; 
     }
     return sum;
@@ -31,9 +33,9 @@ int sum_ints(int L, int x[]) {
 //    printf("\n");
 //}
 
-void naked_single_elim_candidate(int board[LEN][LEN], int r, int c, int candidate_values[LEN]) {
+void naked_single_elim_candidate(short board[LEN][LEN], int r, int c, short candidate_values[LEN]) {
     // Eliminate candidate values using the naked singles method.
-    int* value = &board[r][c];
+	short* value = &board[r][c];
     // printf("Row %d, Col %d, Value %d, Address %d\n", row, i, *value, value);
     if (*value != 0) {
         // If there is a value, remove that as a candidate
@@ -42,12 +44,12 @@ void naked_single_elim_candidate(int board[LEN][LEN], int r, int c, int candidat
 }
 
 
-int check_search_result(int candidate_values[LEN]) {
+int check_search_result(short candidate_values[LEN]) {
     // If only one result, then returns the value of that result
     // If no possible results, then returns -1 (error)
     // Otherwise, returns 0 meaning there are still multiple possible results
 
-    int num_values = sum_ints(LEN, candidate_values);
+	short num_values = sum_inds(LEN, candidate_values);
 
     if (num_values == 0) {
         // printf("number of found values is 9. No solution possible!!\n");
@@ -65,12 +67,13 @@ int check_search_result(int candidate_values[LEN]) {
     return 0;
 }
 
-int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+int naked_single_search(short board[LEN][LEN], short candidates[LEN][LEN][LEN]) {
     /* Naked Single: a cell for which there exists a unique candidate based on the circumstance
         that its groups contain all the other digits (Davis, 2007) */
-    int row = 0;
-    int col = 0;
-    int r, c;
+	short row = 0;
+	short col = 0;
+	short r, c;
+
     int result;
     int num_cells_completed = 0;
 
@@ -112,10 +115,10 @@ int naked_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
 }
 
 
-int hidden_single_group_search(int ind, int row_start, int row_end, int col_start, int col_end,
-		int candidates[LEN][LEN][LEN]) {
-    int c, r;
-	int count = 0;
+int hidden_single_group_search(short candidates[LEN][LEN][LEN], int ind,
+		int row_start, int row_end, int col_start, int col_end) {
+	short c, r;
+	short count = 0;
 
     for (r = row_start; r < row_end; r++) {
         for (c = col_start; c < col_end; c++) {
@@ -131,12 +134,12 @@ int hidden_single_group_search(int ind, int row_start, int row_end, int col_star
     return 0;
 }
 
-int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+int hidden_single_search(short board[LEN][LEN], short candidates[LEN][LEN][LEN]) {
     /* Hidden Single: a cell for which there exists a unique candidate based on the constraint
      *  that no other cell in one of its groups can be that number (Davis, 2007) */
-    int row = 0;
-    int col = 0;
-    int ind;
+	short row = 0;
+	short col = 0;
+	short ind;
 
     int result;
     int num_cells_completed = 0;
@@ -152,21 +155,21 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
                 for (ind = 0; ind < LEN; ind++) {
                     if (candidates[row][col][ind] == 1) {
                         // 1st, look through the same row
-                        result = hidden_single_group_search(ind, row, row + 1, 0, LEN, candidates);
+                        result = hidden_single_group_search(candidates, ind, row, row + 1, 0, LEN);
                         if (result > 0) {
                             break;
                         }
 
                         // 2nd, look through the same column
-                        result = hidden_single_group_search(ind, 0, LEN, col, col+1, candidates);
+                        result = hidden_single_group_search(candidates, ind, 0, LEN, col, col+1);
                         if (result > 0) {
                             break;
                         }
 
                         // 3rd, check the 3x3 box it is in
-                        result = hidden_single_group_search(ind,
+                        result = hidden_single_group_search(candidates, ind,
                             (row / NUM) * NUM, (row / NUM + 1) * NUM, 
-                            (col / NUM) * NUM, (col / NUM + 1) * NUM, candidates);
+                            (col / NUM) * NUM, (col / NUM + 1) * NUM);
                         if (result > 0) {
                             break;
                         }
@@ -193,10 +196,11 @@ int hidden_single_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
 // *******************************************************************************************
 // The following methods are used to remove candidates (but do not directly determine board values)
 
-int remove_candidate(int candidates[LEN][LEN][LEN], int ind,
+int remove_candidate(short candidates[LEN][LEN][LEN], int ind,
 		int row_start, int row_end, int col_start, int col_end) {
 	int num_removed = 0;
-	int r, c;
+
+	short r, c;
 
 	for (r = row_start; r < row_end; r++) {
 		for (c = col_start; c < col_end; c++) {
@@ -212,7 +216,7 @@ int remove_candidate(int candidates[LEN][LEN][LEN], int ind,
 }
 
 
-int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
+int locked_candidate_search(short candidates[LEN][LEN][LEN]) {
 	/*
 	 * A method of elimination for which a number within a box is restricted to a specific
 	 * 	  row or column and therefore can be excluded from the remaining cells in the
@@ -237,16 +241,16 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 
 	int num_occurances = 0;
 
-	int num_groups_found = 0;
-	int spot_found = 0;
-	int num_removed;
+	short num_groups_found = 0;
+	short spot_found = 0;
+	short num_removed;
 
-	int i, n;
-	int r, c;
+	short i, n;
+	short r, c;
 
-	int box;
-	int row_start[LEN] = { 0 };
-	int col_start[LEN] = { 0 };
+	short box;
+	short row_start[LEN] = { 0 };
+	short col_start[LEN] = { 0 };
 
 	for (n = 0; n < LEN; n++) {
 		// Determine the row and column of the start of each box (with size of NUM * NUM)
@@ -425,18 +429,18 @@ int locked_candidate_search(int candidates[LEN][LEN][LEN]) {
 }
 
 
-int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
-		int row_start, int row_end, int col_start, int col_end, int combo[]) {
+int process_naked_hidden_combos(short candidates[LEN][LEN][LEN], short set_size,
+		short row_start, short row_end, short col_start, short col_end, short combo[]) {
 
-	int sum;
-	int r, c, i;
-	int m, n;
+	short sum;
+	short r, c, i;
+	short m, n;
 	int cnt_naked = 0;
 	int cnt_hidden = 0;
 
-	int skip;
-	int cells_in_naked_set[2][LEN] = { 0 };
-	int cells_in_hidden_set[2][LEN] = { 0 };
+	bool skip;
+	short cells_in_naked_set[2][LEN] = { 0 };
+	short cells_in_hidden_set[2][LEN] = { 0 };
 
 	int num_removed = 0;
 
@@ -463,7 +467,7 @@ int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
 			}
 			if (sum >= 2) {  // If only had a sum of 1 would be a naked single...
 				// Naked: If only candidate values are in the set testing, it's a potential naked set
-				if (sum_ints(LEN, candidates[r][c]) == sum) {
+				if (sum_inds(LEN, candidates[r][c]) == sum) {
 					cells_in_naked_set[0][cnt_naked] = r;
 					cells_in_naked_set[1][cnt_naked] = c;
 					// printf("Potential naked pair: Row: %d, Col: %d\n", r + 1, c + 1);
@@ -565,7 +569,7 @@ int process_naked_hidden_combos(int candidates[LEN][LEN][LEN], int set_size,
 	return 0;
 }
 
-int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
+int naked_and_hidden_for_house(short candidates[LEN][LEN][LEN], int set_size,
 		int row_start, int row_end, int col_start, int col_end) {
 	/*
 	 * Performs the naked set and hidden pairs search for the house defined by
@@ -576,11 +580,12 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	 * 		Otherwise, returns 0.
 	 */
 
-	int i, r, c;
-	int a, b, d, e;
-	int num = 0, sum = 0;
-	int values[LEN] = { 0 };
-	int combo[MAX_SET_SIZE] = { 0 };
+	short i, r, c;
+	short a, b, d, e;
+	short num = 0, sum = 0;
+	short values[LEN] = { 0 };
+	short combo[MAX_SET_SIZE] = { 0 };
+
 	int result;
 
 
@@ -686,7 +691,7 @@ int naked_and_hidden_for_house(int candidates[LEN][LEN][LEN], int set_size,
 	return 0;
 }
 
-void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* num_naked, int* num_hidden) {
+void naked_hidden_sets_search(short candidates[LEN][LEN][LEN], int set_size, int* num_naked, int* num_hidden) {
 	/*
 	 * Naked Pairs:
  	 *   This method of elimination pertains to the situation in which two numbers
@@ -707,8 +712,8 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 	 */
 
 	int result = 0;
-	int house;  // the row, column, or box being tested
-	int row_start, col_start;
+	short house;  // the row, column, or box being tested
+	short row_start, col_start;
 
 	*num_naked = 0;
 	*num_hidden = 0;
@@ -774,19 +779,20 @@ void naked_hidden_sets_search(int candidates[LEN][LEN][LEN], int set_size, int* 
 }
 
 
-int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int combo[]) {
-	int i, m, n;
-	int c, r;
-	int vect = 0; // 0: rows, 1: columns
+int fish_search_for_combo(short candidates[LEN][LEN][LEN], int fish_size, short combo[]) {
+	short i, m, n;
+	short c, r;
+	short vect = 0; // 0: rows, 1: columns
 	enum {row, col};
 #ifdef PRINT_DEBUG
 	char vector[2][8] = {"rows", "columns"};
 	char fish_type[3][10] = {"X-Wing", "Swordfish", "Jellyfish"};
 #endif
-	int num, sum;
-	int spots[MAX_FISH_SIZE] = { 0 };
-	int potential_fish;
-	int skip;
+	short num, sum;
+	short spots[MAX_FISH_SIZE] = { 0 };
+	bool potential_fish;
+	bool skip;
+
 	int num_removed = 0;
 	int num_occurances = 0;
 
@@ -902,7 +908,7 @@ int fish_search_for_combo(int candidates[LEN][LEN][LEN], int fish_size, int comb
 	return num_occurances;
 }
 
-int basic_fish_search(int candidates[LEN][LEN][LEN], int fish_size) {
+int basic_fish_search(short candidates[LEN][LEN][LEN], int fish_size) {
 	// fish_size:
 	// 2: X-wings: Look for rectangles of matches:
 	//    https://www.learn-sudoku.com/advanced-techniques.html
@@ -914,8 +920,8 @@ int basic_fish_search(int candidates[LEN][LEN][LEN], int fish_size) {
 	// Note: this algorithm assumes searches with smaller sizes have already been tried...
 
 	int num_occurances = 0;
-	int w = 0, x = 0, y = 0, z = 0;
-	int combo[MAX_FISH_SIZE] = { 0 };
+	short w = 0, x = 0, y = 0, z = 0;
+	short combo[MAX_FISH_SIZE] = { 0 };
 
 	if (fish_size > MAX_FISH_SIZE) {
 		printf("Fish size of %d is not supported!! Max size is: %d...", fish_size, MAX_FISH_SIZE);
@@ -974,26 +980,28 @@ int basic_fish_search(int candidates[LEN][LEN][LEN], int fish_size) {
 // *******************************************************************************************
 
 
-int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+int randomized_value_board_search(short board[LEN][LEN], short candidates[LEN][LEN][LEN]) {
 	// Finally, if all else fails, this technique will just pick a value from the cell with fewest candidates
-	int row = 0;
-    int col = 0;
-    int num_missing = 0;
+	short row = 0;
+	short col = 0;
+    short num_missing = 0;
+
     int result = 0;
     int num_cells_completed = 0;
 
     // Values for the cell with fewest unknown values
-    int row_min = -1;
-    int col_min = -1;
-    int num_missing_min = LEN;
-    int candidate_values_min[LEN] = { 0 };
+    short row_min = -1;
+    short col_min = -1;
+    short num_missing_min = LEN;
+
+    short candidate_values_min[LEN] = { 0 };
     int rand_val;
     
     for (row = 0; row < LEN; row++) {
         for (col = 0; col < LEN; col++) {
             if (board[row][col] == 0) {  // TODO: check board values or candidate values?
                 // If fewer values are missing in this cell than the current candidate, update values 
-                num_missing = sum_ints(LEN, candidates[row][col]);
+                num_missing = sum_inds(LEN, candidates[row][col]);
                 if (num_missing < num_missing_min) {
                     num_missing_min = num_missing;
                     row_min = row;
@@ -1012,7 +1020,7 @@ int randomized_value_board_search(int board[LEN][LEN], int candidates[LEN][LEN][
     if (row_min >= 0) {
 		#ifdef PRINT_DEBUG
         printf("\nSelecting a random result for row %d, col %d.\n Possible values are: ", row_min + 1, col_min + 1);
-        for (int idx = 0; idx < LEN; idx++) {
+        for (short idx = 0; idx < LEN; idx++) {
             if (candidate_values_min[idx] == 1) {
                 printf("%d, ", idx + 1);
             }

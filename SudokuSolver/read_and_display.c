@@ -7,6 +7,7 @@
 #include "board_globals.h"
 #include "puzzles.h"
 #include "read_and_display.h"
+#include "log.h"
 
 // #define _CRT_SECURE_NO_DEPRECATE  // For Visual Studio
 
@@ -19,78 +20,113 @@
 #include <windows.h>
 #endif
 
-void print_line(int add_dashes) {
-    printf(" ");
+void gen_line(char char_array[], int add_dashes) {
+	char_array[0] = '\0';   // ensures the memory is an empty string
+
+	strcat(char_array, " ");
+
     for (int i = 0; i < LEN; i++) {
-        printf("----");
+    	strcat(char_array, "----");
         if (add_dashes > 0) {
         	for(int i = 0; i < add_dashes; i++) {
-        		printf("-");
+        		// printf("-");
+            	strcat(char_array, "-");
         	}
         }
     }
     for (int i = 0; i < NUM-1; i++) {
-        printf("-");
+    	strcat(char_array, "-");
     }
-    printf("\n");
+
+    strcat(char_array, "\n");
+    return;
 }
 
-void print_separators(int add_spaces) {
-    printf("| ");
+void gen_separators(char char_array[], int add_spaces) {
+	char_array[0] = '\0';   // ensures the memory is an empty string
+
+    strcat(char_array, "| ");
     if (add_spaces > 0) {
     	for(int i = 0; i < add_spaces; i++) {
-    		printf(" ");
+    		strcat(char_array, " ");
     	}
     }
     for (int i = 0; i < LEN; i++) {
         if (i % NUM == NUM-1) {
-            printf("   | ");
+            strcat(char_array, "   | ");
         }
         else {
-            printf("    ");
+            strcat(char_array, "    ");
         }
 
         if (add_spaces > 0) {
         	for(int i = 0; i < add_spaces; i++) {
-        		printf(" ");
+        		strcat(char_array, " ");
         	}
         }
     }
-    printf("\n");
+
+    strcat(char_array, "\n");
+    return;
 }
 
-void display_board(int board[LEN][LEN]) {
+void gen_row_string(short board[LEN][LEN], int row, char char_array[]) {
 
-    printf("\nBoard State: \n");
-    print_line(0);  // Top box line
+	char buffer[5];
+	int col;
 
-    for (int row = 0; row < LEN; row++) {
-        printf("| "); // Print the left box line
-        for (int col = 0; col < LEN; col++) {
-            if (board[row][col] == 0) {
-                printf(" - ");
-            }
-            else {
-                printf("%2d ", board[row][col]);
-            }
-            // Pad with line (if section end) or spaces 
-            if (col % NUM == NUM - 1) {
-                printf("| ");
-            }
-            else {
-                printf(" ");
-            }
-        }
-        printf("\n"); // Start a new row
+	char_array[0] = '\0';   // ensures the memory is an empty string
 
-        // Add line (if section end) or spaces and separators
-        if (row % NUM == NUM - 1) {
-            print_line(0);  // Bottom section line
+    strcat(char_array, "| ");  // Print the left box line
+
+    for (col = 0; col < LEN; col++) {
+
+        if (board[row][col] == 0) {
+            strcat(char_array, " - ");
         }
         else {
-            print_separators(0);
+        	buffer[0] = '\0';   // ensures the memory is an empty string
+            sprintf(buffer, "%2d ", board[row][col]);
+            strcat(char_array, buffer);
+        }
+        // Pad with line (if end of box) or spaces
+        if (col % NUM == NUM - 1) {
+            strcat(char_array, "| ");
+        }
+        else {
+            strcat(char_array, " ");
         }
     }
+
+    strcat(char_array, "\n");
+    return;
+}
+
+
+void display_board(short board[LEN][LEN]) {
+    char char_array[100];
+	char_array[0] = '\0';   // ensures the memory is an empty string
+	int row;
+
+    // printf("\nBoard State: \n");
+	gen_line(char_array, 0);
+    printf("%s", char_array);
+
+    for (row = 0; row < LEN; row++) {
+    	gen_row_string(board, row, char_array);
+        printf("%s", char_array);
+
+        // Add box separators
+        if (row % NUM == NUM - 1) {
+        	gen_line(char_array, 0);  // Box bottom line
+            printf("%s", char_array);
+        }
+        else {
+        	gen_separators(char_array, 0);  // Box side lines
+            printf("%s", char_array);
+        }
+    }
+    printf("\n");
 }
 
 void print_spaces(int num) {
@@ -102,11 +138,13 @@ void print_spaces(int num) {
 	}
 }
 
-void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+void display_candidates(short board[LEN][LEN], short candidates[LEN][LEN][LEN]) {
     int offset = (int) LEN/2;
+    char char_array[100];
 
     printf("\nCandidate State: \n");
-    print_line(5);
+	gen_line(char_array, 5);
+    printf("%s", char_array);
 
     for (int row = 0; row < LEN; row++) {
 		printf("|"); // Print the left box line
@@ -139,70 +177,75 @@ void display_candidates(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
 		printf("\n"); // Start a new line
 
 		if (row % NUM == NUM - 1) {
-			print_line(5);
+			gen_line(char_array, 5);
+		    printf("%s", char_array);
 		}
 		else {
-			print_separators(5);
+//			print_separators(5);
+        	gen_separators(char_array, 5);
+            printf("%s", char_array);
 		}
 	}
 }
 
-void display_candidates_in_multiple_rows(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
-    int ind_start;
-    int offset = (int) NUM/2;
-
-    printf("\nCandidate State: \n");
-    print_line(1);
-
-    for (int row = 0; row < LEN; row++) {
-        ind_start = 0;
-
-    	// Each row gets NUM candidates to print candidates
-        for (int cnt = 0; cnt < NUM; cnt++) {
-        	if (cnt > 0) {
-        		ind_start += NUM;
-        	}
-
-            printf("| "); // Print the left box line
-			for (int col = 0; col < LEN; col++) {
-				// print candidates if cell not yet solved
-				if (board[row][col] == 0) {
-					for (int ind = ind_start; ind < ind_start+NUM; ind++) {
-						if (candidates[row][col][ind] == 1) {
-							printf("%d", ind + 1);
-						}
-						else {
-							printf("-");
-						}
-					}
-				}
-				// Print known values
-				else if (cnt == offset) {
-					print_spaces(offset);
-					printf("%d", board[row][col]);
-					print_spaces(NUM - 1 - offset);
-				}
-				else {
-					print_spaces(NUM);
-				}
-
-				// Separate columns with line (if section end) or spaces
-				if (col % NUM == NUM - 1) {
-					printf(" | ");
-				}
-				else {
-					printf(" ");
-				}
-			}
-
-	        printf("\n"); // Start a new line
-        }
-
-        if (row % NUM == NUM - 1) {
-            print_line(1);
-        }
-    }
-}
+//void display_candidates_in_multiple_rows(int board[LEN][LEN], int candidates[LEN][LEN][LEN]) {
+//    int ind_start;
+//    int offset = (int) NUM/2;
+//
+//    printf("\nCandidate State: \n");
+//    print_line(1);
+//	gen_line(char_array, 1);
+//    printf("%s\n", char_array);
+//
+//    for (int row = 0; row < LEN; row++) {
+//        ind_start = 0;
+//
+//    	// Each row gets NUM candidates to print candidates
+//        for (int cnt = 0; cnt < NUM; cnt++) {
+//        	if (cnt > 0) {
+//        		ind_start += NUM;
+//        	}
+//
+//            printf("| "); // Print the left box line
+//			for (int col = 0; col < LEN; col++) {
+//				// print candidates if cell not yet solved
+//				if (board[row][col] == 0) {
+//					for (int ind = ind_start; ind < ind_start+NUM; ind++) {
+//						if (candidates[row][col][ind] == 1) {
+//							printf("%d", ind + 1);
+//						}
+//						else {
+//							printf("-");
+//						}
+//					}
+//				}
+//				// Print known values
+//				else if (cnt == offset) {
+//					print_spaces(offset);
+//					printf("%d", board[row][col]);
+//					print_spaces(NUM - 1 - offset);
+//				}
+//				else {
+//					print_spaces(NUM);
+//				}
+//
+//				// Separate columns with line (if section end) or spaces
+//				if (col % NUM == NUM - 1) {
+//					printf(" | ");
+//				}
+//				else {
+//					printf(" ");
+//				}
+//			}
+//
+//	        printf("\n"); // Start a new line
+//        }
+//
+//        if (row % NUM == NUM - 1) {
+//            print_line(1);
+//        }
+//    }
+//}
 
 
 void correct_path_name(char buff[]) {
@@ -234,6 +277,27 @@ void correct_path_name(char buff[]) {
 
 }
 
+void get_current_working_dir(char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE]) {
+    // Get the current directory during runtime
+    //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
+    //    http://www.cplusplus.com/forum/windows/187372/
+
+    // Figure out the dir_name...
+	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
+	GetCurrentDirectoryA(FILENAME_MAX - MAX_FILENAME_SIZE, dir_name);
+    // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
+    correct_path_name(dir_name);  // TODO: Figure this out later...
+    dbprintf("Corrected file directory: '%s'\n", dir_name);
+
+    #else
+    // Workaround...
+    strcpy(dir_name, PATHNAME);
+    dbprintf("Current working directory: '%s'\n", dir_name;
+
+	#endif
+
+}
+
 FILE* build_and_check_path_name(char dir_name[], char file_name[], char path_name[]) {
 	FILE* fpt = NULL;
 
@@ -241,12 +305,12 @@ FILE* build_and_check_path_name(char dir_name[], char file_name[], char path_nam
     fpt = fopen(path_name, "r");
 
 	if (fpt == NULL) {
-		printf("Error while opening the file '%s'\n ", path_name);
+		printf("Error while opening the file \"%s\" \n ", path_name);
 	}
 	return fpt;
 }
 
-int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char file_name[MAX_FILENAME_SIZE]) {
+int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], char file_name[MAX_FILENAME_SIZE]) {
     /* This program populates the initial board values from a .txt file
     The .txt file should have all values in 9 rows and 9 columns
     Empty spaces should be specified by either "-" or "0" (spaces are ignored)
@@ -255,7 +319,6 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char 
 
     char item;
     char input[256];
-    // char file_name[25];
     char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE];
     char path_name[FILENAME_MAX];
     int attempts = 0;
@@ -268,28 +331,17 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char 
     FILE* fp;
 
     // Get the current directory during runtime
-    //    https://docs.microsoft.com/sv-se/windows/win32/api/winbase/nf-winbase-getcurrentdirectory?redirectedfrom=MSDN
-    //    http://www.cplusplus.com/forum/windows/187372/ 
+    get_current_working_dir(dir_name);
 
-    // Figure out the dir_name...
-	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
-    GetCurrentDirectoryA(FILENAME_MAX - MAX_FILENAME_SIZE, dir_name);
-    // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
-    correct_path_name(dir_name);  // TODO: Figure this out later...
-    printf("Corrected file directory: '%s'\n", dir_name);
-	#else
-    // Workaround...
-    strcpy(dir_name, PATHNAME);
-    printf("Current working directory: '%s'\n", dir_name;
-	#endif // !PATHNAME
-
-    // Then, get the file_name and build a path_name
+    // For development, puzzle name is defined in puzzle.h
 	#ifdef FILENAME
-    strcpy(file_name, FILENAME);  // For development, puzzle name is defined in puzzle.h
+    strcpy(file_name, FILENAME);
 	#endif
-    // build path_name and check if filename passed in or from puzzle.h is valid
+
+    // build path_name and check if filename (passed in or from puzzle.h) is valid
     fp = build_and_check_path_name(dir_name, file_name, path_name);
 
+    // If the filename is not valid, have user try to enter again
     while (fp == NULL) {
         printf("Enter the filename of the Sudoku puzzle to solve (without '.txt'): \n");
         fgets(input, 256, stdin);
@@ -307,7 +359,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char 
         }
     }
 
-    // Read these in the values from the file 
+    // Then, read in the values from the file
     printf("\nReading in contents from: '%s'\n", path_name);
     printf("---------------------------------------------------------------\n");
 
@@ -391,7 +443,7 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char 
     scanf("%c", &item);
 	#endif
 
-    // Init counter
+    // Init empty cell counter and candidate board
     for (int row = 0; row < LEN; row++) {
         for (int col = 0; col < LEN; col++) {
             if (board[row][col] == 0) { 
@@ -403,4 +455,54 @@ int get_initial_values(int board[LEN][LEN], int candidates[LEN][LEN][LEN], char 
         }
     }
     return num_empty_cells;
+}
+
+
+int save_board_to_file(short board[LEN][LEN], char file_name[MAX_FILENAME_SIZE]) {
+
+	char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE];
+	char path_name[FILENAME_MAX];
+    char char_array[100];
+	char_array[0] = '\0';   // ensures the memory is an empty string
+	int row;
+
+	FILE* fp;
+
+	// build the path_name and open file handler for writing
+	get_current_working_dir(dir_name);
+    snprintf(path_name, FILENAME_MAX, "%s\\puzzle_solutions\\%s-solution.txt", dir_name, file_name);
+    fp = fopen(path_name, "w");
+
+    if (fp == NULL) {
+    	printf("Error while opening the file \"%s\" \n ", path_name);
+    	return false;
+    }
+
+    // printf("\nBoard State: \n");
+	gen_line(char_array, 0);
+	fputs(char_array, fp);
+
+    for (row = 0; row < LEN; row++) {
+    	gen_row_string(board, row, char_array);
+//        printf("%s", char_array);
+        fputs(char_array, fp);
+
+        // Add box separators
+        if (row % NUM == NUM - 1) {
+        	gen_line(char_array, 0);  // Box bottom line
+//            printf("%s", char_array);
+            fputs(char_array, fp);
+        }
+        else {
+        	gen_separators(char_array, 0);  // Box side lines
+//            printf("%s", char_array);
+            fputs(char_array, fp);
+        }
+    }
+//    printf("\n");
+    fputs("\n", fp);
+    fclose(fp);
+
+    printf("Saved puzzle results to:\n  \"%s\" \n ", path_name);
+	return true;
 }

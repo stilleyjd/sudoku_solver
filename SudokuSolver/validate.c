@@ -2,36 +2,36 @@
 #include "validate.h"
 #include "log.h"
 
-void check_area(int board[LEN][LEN], int row_start, int row_end, int col_start, int col_end, int double_coords[]) {
-    int r, c;
+int check_area(short board[LEN][LEN], int row_start, int row_end, int col_start, int col_end) {
+    int r, c, i;
     int found_values[LEN] = { 0 };
-    int* value;
-
     for (r = row_start; r < row_end; r++) {
         for (c = col_start; c < col_end; c++) {
-            value = &board[r][c];
+            i = board[r][c] - 1;
 
-            if (*value > 0) {
-                found_values[*value - 1]++;
+            if (i < 0) {
+				continue;  // Move on if no value at this spot
+			}
+            else {
+                found_values[i]++;
             }
 
-            if (*value - 1 < 0) {
-                return;
-            }
-            else if (found_values[*value - 1] > 1) {
-                printf("\n\nDouble value of %d found at %d, %d!!!\n", *value, r + 1, c + 1);
-                double_coords[0] = r + 1;
-                double_coords[1] = c + 1;
-                return;
+            if (found_values[i] > 1) {
+                printf("\n\nBoard is Invalid!\n"
+                		"  Double value of %d found at row %d, col %d !!!\n", i + 1, r + 1, c + 1);
+                return false;
             }
         }
     }
+
+    return true;
 }
 
-void check_for_double_values(int board[LEN][LEN], int double_coords[]) {
+int exists_no_double_values(short board[LEN][LEN]) {
     // Checks the board to make sure there is only one instance of each number in each row, col, and box
     // If there is an instance of multiple values, sets values to row and col where occurrence found
     int r, c, b;
+    bool result = true;
 
     printf("Checking the board for invalid values...\n");
 
@@ -39,16 +39,20 @@ void check_for_double_values(int board[LEN][LEN], int double_coords[]) {
     dbprintf("Checking row: ");
     for (r = 0; r < LEN; r++) {
         dbprintf("%d, ", r + 1);
-        check_area(board, r, r + 1, 0, LEN, double_coords);
-        if (double_coords[0] + double_coords[1] > -1) { return; }
+        result = check_area(board, r, r + 1, 0, LEN);
+        if (result == false) {
+        	return result;
+        }
     }
 
     // 2nd, check all columns
     dbprintf("\nChecking column: ");
     for (c = 0; c < LEN; c++) {
         dbprintf("%d, ", c + 1);
-        check_area(board, 0, LEN, c, c + 1, double_coords);
-        if (double_coords[0] + double_coords[1] > -1) { return; }
+		result = check_area(board, 0, LEN, c, c + 1);
+		if (result == false) {
+			return result;
+		}
     }
 
     // 3rd, check all NxN boxes
@@ -58,9 +62,13 @@ void check_for_double_values(int board[LEN][LEN], int double_coords[]) {
         for (c = 0; c < LEN - 2; c = c + NUM) {
         	b++;
             dbprintf("%d, ", b);
-            check_area(board, r, r + NUM, c, c + NUM, double_coords);
-            if (double_coords[0] + double_coords[1] > -1) { return; }
+    		result = check_area(board, r, r + NUM, c, c + NUM);
+    		if (result == false) {
+    			return result;
+    		}
         }
     }
     dbprintf("\n");
+
+    return result;
 }

@@ -8,5 +8,5 @@
 5 - - - - 9 - - - 
 - - - - - - - 4 - 
 
-// Very hard difficulty Sudoku board used for testing (17 givens)
+// Figure 8: Hard difficulty Sudoku board used for testing (19 givens) [17].
 // From: https://www.researchgate.net/figure/Very-hard-difficulty-Sudoku-board-used-for-testing-17-givens-18_fig9_256169416

@@ -22,22 +22,22 @@ Note: some of techniques here come from:
 const int max_retries = 2000;
 
 struct BoardStats {
-    int num_empty_cells;
-    int naked_single;
-    int hidden_single;
-    int locked_candidate;
-    int naked_pairs;
-    int hidden_pairs;
-    int naked_triples;
-    int hidden_triples;
-    int naked_quads;
-    int hidden_quads;
-    int naked_quints;
-    int hidden_quints;
-    int x_wing;
-    int swordfish;
-    int jellyfish;
-    int random;
+	short num_empty_cells;
+	short naked_single;
+	short hidden_single;
+	short locked_candidate;
+	short naked_pairs;
+	short hidden_pairs;
+	short naked_triples;
+	short hidden_triples;
+	short naked_quads;
+	short hidden_quads;
+	short naked_quints;
+	short hidden_quints;
+	short x_wing;
+    short swordfish;
+    short jellyfish;
+    short random;
 };
 
 
@@ -45,45 +45,44 @@ int main (int argc, char *argv[]) {
 
 	char file_name[MAX_FILENAME_SIZE] = "Not_yet_entered";
 
-    int board[LEN][LEN] = { 0 }; // Initial board state
-    int candidates[LEN][LEN][LEN] = { 0 }; // Possible values for the board
+	short board[LEN][LEN] = { 0 }; // Initial board state
+	short candidates[LEN][LEN][LEN] = { 0 }; // Possible values for the board
     struct BoardStats board_stats = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     int round = 0;
-    int num_cells_found = 0;
-    int num_cells_completed = 0;
-    int num_eliminations = 0;
     int num_fails = 0;
-    int double_values[2] = { -1, -1 };
+
+    short num_cells_found = 0;
+    short num_cells_completed = 0;
+    short num_eliminations = 0;
 
     int num_naked = 0;
     int num_hidden = 0;
 
-    int difficulty = 0;
+    short difficulty = 0;
 
     // Copy of initial values in case of failure (the last deterministic state of the board)
     // TODO: Get rid of these if possible. (if can get rid of brute force technique)
-    int det_board[LEN][LEN] = { 0 };
-    int det_candidates[LEN][LEN][LEN] = { 0 };
+    short det_board[LEN][LEN] = { 0 };
+    short det_candidates[LEN][LEN][LEN] = { 0 };
     struct BoardStats det_board_stats;
 
     // Prepare for random values
-    int used_random_values = false;
+    bool used_random_values = false;
     srand((int) time(NULL));   // Initialize the random number generator, should only be called once.
     
 
     // Check if user provided a filename
     if (argc == 2) {  // Assume parameter is the filename if given
     	strcpy(file_name, argv[1]);
-    	printf("User provided file name: %s\n", file_name);
+    	dbprintf("User provided file name: %s\n", file_name);
     }
 
     // Setup board
     board_stats.num_empty_cells = get_initial_values(board, candidates, file_name);
 
     // Check to make sure that each row, col, and box only has 1 - 9 once
-    check_for_double_values(board, double_values);
-    if (double_values[0] + double_values[1] > -1) {
+    if (exists_no_double_values(board) == false) {
         printf("Cannot continue due to invalid board!!\n");
         exit(EXIT_FAILURE);
     }
@@ -92,7 +91,7 @@ int main (int argc, char *argv[]) {
     printf("\nNumber of Completed Cells: %d\n", num_cells_completed);
     printf("Number of Remaining Cells: %d\n", board_stats.num_empty_cells);
     printf("\n--------------------------------------------------------------------------\n");
-    printf("\nStarting!\n\n");
+    printf("\nStarting...\n\n");
 
     // Main loop
     while (board_stats.num_empty_cells > 0) {
@@ -130,7 +129,8 @@ int main (int argc, char *argv[]) {
         // Check board conditions before moving on
         if (board_stats.num_empty_cells == 0) {
             break;  // If nothing else to solve, quit
-        } else if (num_cells_found < 0) { // If something went wrong (no possible solution for a cell)
+        }
+        else if (num_cells_found < 0) { // If something went wrong (no possible solution for a cell)
             num_fails++;
 
             if (used_random_values == false) {
@@ -153,6 +153,8 @@ int main (int argc, char *argv[]) {
             continue;
         }
 
+
+        /* ************************  More advanced Techniques ************************ */
         // Hidden Singles
         dbprintf("\nNo new cells could be solved in the last iteration.\n"
         		"    Trying Hidden Singles Search\n");
@@ -266,7 +268,7 @@ int main (int argc, char *argv[]) {
         // Finally, try a Brute Force technique
 		dbprintf("\nNo candidates could be eliminated with previous techniques.\n"
 				"    Trying randomized solution for a cell...\n");
-		// TODO: Make this more systematic than random (like step through candidates instead)
+		// TODO: Make this more systematic than random (like step through candidates instead)?
 		num_cells_found = randomized_value_board_search(board, candidates);
 		board_stats.num_empty_cells -= num_cells_found;
 		board_stats.random += num_cells_found;
@@ -275,30 +277,34 @@ int main (int argc, char *argv[]) {
 			used_random_values = true;
 		}
 		else {
+			// If not even this worked, give up...
+			printf("Not even random value gen could work. Giving up...\n");
 			break;
 		}
 
     }
 
-    // Finish up
+
+    /* ****************************   Finish up  **************************** */
     printf("\nFinished.\n");
 
     if (board_stats.num_empty_cells == 0) {
 		// Check to make sure that each row, col, and box only has 1 - 9 once
-		int double_values[2] = { -1, -1 };
-		check_for_double_values(board, double_values);
-
-		if (double_values[0] == -1) {
+		if (exists_no_double_values(board) == true) {
 			printf("\nThe solution is valid. Success!!\n");
 		}
 		else {
-			printf("\nThe solution had an invalid result at %d, %d!!!\n", double_values[0], double_values[1]);
+			printf("\nThe solution is not valid. Failure!!\n");
+		    display_board(board);
 			exit(EXIT_FAILURE);
 		}
 	}
 
-    printf("\nFinal Solution:");
+    printf("\nFinal Solution for Puzzle \"%s\":\n", file_name);
     display_board(board);
+
+    //  TODO:  Save board to a file based off of the file_name
+    save_board_to_file(board, file_name);
 
 	printf("\nTook %d rounds\n", round);
 	if (num_fails == 0) {
