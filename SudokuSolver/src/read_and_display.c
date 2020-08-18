@@ -1,9 +1,10 @@
 /* This file has functions used to read in initial boards from a file and display the board state
 */
 
-
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 #include "board_globals.h"
 #include "puzzles.h"
 #include "read_and_display.h"
@@ -16,9 +17,20 @@
 // #define FILENAME
 // #define PATHNAME
 
-#ifndef PATHNAME
+/* Define Windows vs Linux differences
+Linux and Linux-derived           __linux__
+Windows                           _WIN32
+Windows 64 bit                    _WIN64 (implies _WIN32)
+*/
+// #ifndef PATHNAME
+#if defined(_WIN64)
 #include <windows.h>
+#define SEP '\\'
+#else  // Assume linux
+#include <unistd.h>
+#define SEP '/'
 #endif
+// #endif
 
 void gen_line(char char_array[], int add_dashes) {
 	char_array[0] = '\0';   // ensures the memory is an empty string
@@ -255,16 +267,15 @@ void correct_path_name(char buff[]) {
     char new_word[] = "SudokuSolver";
     char* loc;
 
-    //    First, find if "Debug" starts // TODO: Do this with pointers instead??
+    // First, find if / where "Debug" in path // TODO: Do this with pointers instead??
     loc = strstr(buff, "Debug");
     if (loc != NULL) {
         // Find index at beginning of old word
         i = strlen(buff);
-        while (i > 0 && buff[i] != '\\') {
-            // printf("%c", buff[i]);
+        while (i > 0 && buff[i] != SEP) { 
             i--;
         }
-        i++;
+        i++;  // Move back past SEP
 
         // Then replace text starting at that index
         for (j = 0; j < (int) sizeof(new_word); j++) {
@@ -273,6 +284,21 @@ void correct_path_name(char buff[]) {
         }
         // Then place end character
         buff[i++] = '\0';
+    }
+
+    // Otherwise, if in the source code folder, just go up one level to get to root
+    else {
+        loc = strstr(buff, "src");
+        if (loc != NULL) {
+            // Find index at beginning of old word
+            i = strlen(buff);
+            // Then go back until SEP is found
+            while (i > 0 && buff[i] != SEP) {
+                i--;
+            }
+            // Then place end of string character there
+            buff[i++] = '\0';
+        }
     }
 
 }
@@ -284,16 +310,20 @@ void get_current_working_dir(char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE]) {
 
     // Figure out the dir_name...
 	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
+
+    #if defined(_WIN64)
 	GetCurrentDirectoryA(FILENAME_MAX - MAX_FILENAME_SIZE, dir_name);
+    #else  // Assume linux
+    getcwd(dir_name, FILENAME_MAX - MAX_FILENAME_SIZE);
+    #endif
+
     // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
     correct_path_name(dir_name);  // TODO: Figure this out later...
-    dbprintf("Corrected file directory: '%s'\n", dir_name);
-
+    printf("Corrected file directory: '%s'\n", dir_name);
     #else
     // Workaround...
     strcpy(dir_name, PATHNAME);
-    dbprintf("Current working directory: '%s'\n", dir_name;
-
+    printf("Current working directory: '%s'\n", dir_name);
 	#endif
 
 }
@@ -301,7 +331,7 @@ void get_current_working_dir(char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE]) {
 FILE* build_and_check_path_name(char dir_name[], char file_name[], char path_name[]) {
 	FILE* fpt = NULL;
 
-    snprintf(path_name, FILENAME_MAX, "%s\\puzzles\\%s.txt", dir_name, file_name);  // build file path
+    snprintf(path_name, FILENAME_MAX, "%s%cpuzzles%c%s.txt", dir_name, SEP, SEP, file_name);  // build file path
     fpt = fopen(path_name, "r");
 
 	if (fpt == NULL) {
@@ -317,6 +347,7 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
     It returns the number of empty spaces remaining
     */
 
+    int c;
     char item;
     char input[256];
     char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE];
@@ -327,6 +358,7 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
     int val;
     int val2;
     int num_empty_cells = 0;
+    int comment = false;
 
     FILE* fp;
 
@@ -363,25 +395,33 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
     printf("\nReading in contents from: '%s'\n", path_name);
     printf("---------------------------------------------------------------\n");
 
-    item = fgetc(fp);
-    while (item != EOF) {
+    do {
+        c = fgetc(fp);
+        if (feof(fp)) {
+            break;
+        }
+
+        // If not EOF, then convert to char and print
+        item = (char) c;
         printf("%c", item);
 
-        // Check if commented line
+        // Handle comments in the text file
         if (item == '/') {
-            while (item != '\n' && item != EOF) {
-                item = fgetc(fp);
-                if (item != EOF) {
-                	printf("%c", item);
-                }
-            }
-        }
-        // Check if space or divider
-        else if (item == ' ' || item == '|') {
-            item = fgetc(fp);
+            comment = true;
             continue;
         }
-        // Check if EOL "\n"
+        else if (comment == true) {
+            if (item == '\n') {
+                comment = false;
+                continue;
+            }
+        }
+        
+        // If space or divider, just print and move on...
+        else if (item == ' ' || item == '|') {
+            continue;
+        }
+        // Check if EOL: '\n'
         else if (item == '\n') {
             if (col == LEN) {
                 // If end of line found after LEN (9) columns, reset columns and incremnt the row
@@ -393,14 +433,15 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
                 exit(EXIT_FAILURE);
             }
         }
+
         // Finally, handle actual board values
         else {
+            // check for values that mean 0
             if (item == '0' || item == '-' || item == '.' ) {
-                // Check if empty value "-" or "0"
                 val = 0;
             }
             else {
-                // Otherwise, convert to int
+                // Otherwise, convert from char to int
                 val = item - '0';
 
                 // For boards with LEN > 9, check if next value is int (a double-digit number)
@@ -409,6 +450,7 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
 
                     val2 = item - '0';
                     if (val2 >= 0 && val2 < 9) {
+                        // If the next character is a valid int, then update the value accordingly. 
                         printf("%c", item);
                         val = val * 10 + val2;
                     }
@@ -417,7 +459,7 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
                     }
                 }
             }
-            // Check for errors
+            // Check for errors before saving value
             if (row >= LEN || col >= LEN) {
                 printf("\nBoard has too many rows or columns! rows: %d, columns: %d!\n", row + 1, col + 1);
                 exit(EXIT_FAILURE);
@@ -431,8 +473,7 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
             col++;
         }
 
-        item = fgetc(fp);
-    }
+    } while (c != EOF); 
 
     fclose(fp);
     printf("\n---------------------------------------------------------------\n\n");
@@ -460,7 +501,7 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
 
 int save_board_to_file(short board[LEN][LEN], char file_name[MAX_FILENAME_SIZE]) {
 
-	char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE];
+	char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE - MAX_FILENAME_SIZE];
 	char path_name[FILENAME_MAX];
     char char_array[100];
 	char_array[0] = '\0';   // ensures the memory is an empty string
@@ -470,7 +511,7 @@ int save_board_to_file(short board[LEN][LEN], char file_name[MAX_FILENAME_SIZE])
 
 	// build the path_name and open file handler for writing
 	get_current_working_dir(dir_name);
-    snprintf(path_name, FILENAME_MAX, "%s\\puzzle_solutions\\%s-solution.txt", dir_name, file_name);
+    snprintf(path_name, FILENAME_MAX, "%s%cpuzzle_solutions%c%s-solution.txt", dir_name, SEP, SEP, file_name);
     fp = fopen(path_name, "w");
 
     if (fp == NULL) {

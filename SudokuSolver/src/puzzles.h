@@ -1,4 +1,4 @@
-#pragma once
+// #pragma once
 
 /* *********************   9 x 9 Puzzles   ********************* */
 //Solved Deterministically
@@ -42,7 +42,7 @@
 //#define FILENAME "P29" // Evil!!: 12 random + Naked & hidden singles, locked candidates, naked pairs & triples & quads(4) & quints(5)
 
 
-//#define FILENAME "P28"  // Unsolvable!!: even in 5000 rounds!
+//#define FILENAME "P28"  // Unsolvable!!: even with 5000 retries!
 
 //#define FILENAME "TEST"
 

@@ -1,0 +1,9 @@
+Comile
+  make
+  
+Run 
+  make run
+  
+  
+Samba (server)
+To restart?: sudo service smbd restart
