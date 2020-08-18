@@ -23,7 +23,7 @@ Windows                           _WIN32
 Windows 64 bit                    _WIN64 (implies _WIN32)
 */
 // #ifndef PATHNAME
-#if defined(_WIN64)
+#if defined(_WIN32)
 #include <windows.h>
 #define SEP '\\'
 #else  // Assume linux
@@ -311,9 +311,9 @@ void get_current_working_dir(char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE]) {
     // Figure out the dir_name...
 	#ifndef PATHNAME // If PATHNAME is not specified above, find automatically
 
-    #if defined(_WIN64)
+    #if defined(_WIN32)
 	GetCurrentDirectoryA(FILENAME_MAX - MAX_FILENAME_SIZE, dir_name);
-    #else  // Assume linux
+    #else  // If not Windows, assume Linux
     getcwd(dir_name, FILENAME_MAX - MAX_FILENAME_SIZE);
     #endif
 
