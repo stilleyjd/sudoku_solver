@@ -10,10 +10,7 @@
 #include "read_and_display.h"
 #include "log.h"
 
-// #define _CRT_SECURE_NO_DEPRECATE  // For Visual Studio
-
-
-// NOTE! These are now defined in puzzels.h
+// NOTE! These are now defined in puzzles.h, not here
 // #define FILENAME
 // #define PATHNAME
 
@@ -22,7 +19,6 @@ Linux and Linux-derived           __linux__
 Windows                           _WIN32
 Windows 64 bit                    _WIN64 (implies _WIN32)
 */
-// #ifndef PATHNAME
 #if defined(_WIN32)
 #include <windows.h>
 #define SEP '\\'
@@ -30,7 +26,6 @@ Windows 64 bit                    _WIN64 (implies _WIN32)
 #include <unistd.h>
 #define SEP '/'
 #endif
-// #endif
 
 void gen_line(char char_array[], int add_dashes) {
 	char_array[0] = '\0';   // ensures the memory is an empty string
@@ -182,9 +177,6 @@ void display_candidates(short board[LEN][LEN], short candidates[LEN][LEN][LEN]) 
 			if (col % NUM == NUM - 1) { // Separate boxes with a line
 				printf("|");
 			}
-			// else {
-			// 	printf(" ");
-			// }
 		}
 		printf("\n"); // Start a new line
 
@@ -317,26 +309,45 @@ void get_current_working_dir(char dir_name[FILENAME_MAX - MAX_FILENAME_SIZE]) {
     getcwd(dir_name, FILENAME_MAX - MAX_FILENAME_SIZE);
     #endif
 
-    // Correct path if "Debug" is in the path_name. Replace with "SudokuSolver"
-    correct_path_name(dir_name);  // TODO: Figure this out later...
-    printf("Corrected file directory: '%s'\n", dir_name);
+    // Correct path if "Debug" or "src" are in the path_name.
+    correct_path_name(dir_name);
+    dbprintf("Corrected file directory: '%s'\n", dir_name);
     #else
     // Workaround...
     strcpy(dir_name, PATHNAME);
-    printf("Current working directory: '%s'\n", dir_name);
 	#endif
+
+    printf("Current directory: '%s'\n", dir_name);
 
 }
 
 FILE* build_and_check_path_name(char dir_name[], char file_name[], char path_name[]) {
 	FILE* fpt = NULL;
+    char buffer[MAX_FILENAME_SIZE];
+    strcpy(buffer, file_name);  // Set default for buffer
 
-    snprintf(path_name, FILENAME_MAX, "%s%cpuzzles%c%s.txt", dir_name, SEP, SEP, file_name);  // build file path
+    // build the file path
+    // First, assume user provided the full filename
+	snprintf(path_name, FILENAME_MAX, "%s%cpuzzles%c%s", dir_name, SEP, SEP, file_name); 
     fpt = fopen(path_name, "r");
 
+    if (fpt == NULL) {
+        // If not valid, try adding ".txt" extension 
+	    snprintf(path_name, FILENAME_MAX, "%s%cpuzzles%c%s.txt", dir_name, SEP, SEP, file_name); 
+        fpt = fopen(path_name, "r");
+    }
 	if (fpt == NULL) {
+        // If not valid, try adding "P" to beggining of filename
+        snprintf(buffer, MAX_FILENAME_SIZE, "P%s", file_name);
+        strcpy(file_name, buffer);
+	    snprintf(path_name, FILENAME_MAX, "%s%cpuzzles%c%s.txt", dir_name, SEP, SEP, file_name); 
+        fpt = fopen(path_name, "r");
+    }
+    
+    if (fpt == NULL) {
 		printf("Error while opening the file \"%s\" \n ", path_name);
 	}
+
 	return fpt;
 }
 
@@ -375,7 +386,8 @@ int get_initial_values(short board[LEN][LEN], short candidates[LEN][LEN][LEN], c
 
     // If the filename is not valid, have user try to enter again
     while (fp == NULL) {
-        printf("Enter the filename of the Sudoku puzzle to solve (without '.txt'): \n");
+        printf("\nEnter the name/number of the Sudoku puzzle (in the \"puzzles\" folder) to solve: \n");
+        printf("    Note: Starting \"P\" and extension (\".txt\") do not need to be included. \n");
         fgets(input, 256, stdin);
         sscanf(input, "%s", file_name);
 

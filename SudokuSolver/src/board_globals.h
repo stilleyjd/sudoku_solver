@@ -13,6 +13,6 @@ typedef enum {false=0, true=1} bool;  // Don't assume C99
 #define LEN 9
 
 // For 16 x 16 Puzzles
-//#define NUM 4
-//#define LEN 16
+// #define NUM 4
+// #define LEN 16
 

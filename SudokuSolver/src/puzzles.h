@@ -1,5 +1,10 @@
 // #pragma once
 
+
+// #define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
+// #define PATHNAME "/home/pi/Public/projects/sudoku_solver/SudokuSolver" // Raspberry Pi
+
+
 /* *********************   9 x 9 Puzzles   ********************* */
 //Solved Deterministically
 //#define FILENAME "P1"  // Very Easy: Only naked singles
@@ -50,9 +55,7 @@
 //    http://forum.enjoysudoku.com/the-hardest-sudokus-t4212.html (made it to: 6: dml1 - P27)
 
 
+
 /* ********************   16 x 16 Puzzles   ******************** */
 //     Also need to change NUM and LEN Board Globals!
-//#define FILENAME "P16x16-1" // Medium: Solved with naked & hidden singles and locked candidates
-
-
-// #define PATHNAME "C:\\Users\\Jordan\\git\\sudoku_solver\\SudokuSolver" // Work PC: ELT-0002
+//#define FILENAME "P16x1" // Medium: Solved with naked & hidden singles and locked candidates
